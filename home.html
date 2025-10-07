@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adobe Animate Syllabus Tracker</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Core JavaScript Logic (Uses localStorage for Persistence) -->
+    <script>
+        
+        // --- Local Storage Keys ---
+        const FONT_SIZE_KEY = 'app-font-size-value'; 
+        const MODULE_STATUS_KEY = 'module-completion-status';
+
+        // Get HTML elements
+        const rootElement = document.documentElement;
+        let textContainer, colorSlider, fontSizeSlider, moduleCards;
+
+        // --- Module Status Persistence (localStorage) ---
+
+        /**
+         * Loads the module progress from localStorage and updates the UI.
+         */
+        function loadModuleProgress() {
+            try {
+                const storedProgressJson = localStorage.getItem(MODULE_STATUS_KEY);
+                const progress = storedProgressJson ? JSON.parse(storedProgressJson) : {};
+                
+                moduleCards.forEach(card => {
+                    const moduleId = card.dataset.moduleId;
+                    const checkbox = card.querySelector('.module-checkbox');
+
+                    if (moduleId && checkbox) {
+                        const isCompleted = progress[moduleId] === true;
+                        checkbox.checked = isCompleted;
+                        toggleCompletionStyle(card, isCompleted);
+                    }
+                });
+            } catch (e) {
+                console.error("Error loading progress from localStorage:", e);
+            }
+        }
+
+        /**
+         * Updates the completion status in localStorage.
+         */
+        function updateModuleProgress(moduleId, isCompleted) {
+            try {
+                // 1. Get current state
+                const storedProgressJson = localStorage.getItem(MODULE_STATUS_KEY);
+                const progress = storedProgressJson ? JSON.parse(storedProgressJson) : {};
+                
+                // 2. Update the specific module status
+                progress[moduleId] = isCompleted;
+
+                // 3. Save back to localStorage
+                localStorage.setItem(MODULE_STATUS_KEY, JSON.stringify(progress));
+                
+            } catch (e) {
+                console.error("Error updating progress in localStorage:", e);
+            }
+        }
+
+        /**
+         * Toggles the visual style of the module card.
+         */
+        function toggleCompletionStyle(card, isCompleted) {
+            if (isCompleted) {
+                // Apply greenish-blue completed style
+                card.classList.add('module-completed');
+                card.classList.remove('bg-gray-900', 'border-gray-800', 'hover:shadow-primary-accent/40');
+            } else {
+                // Revert to original dark style
+                card.classList.remove('module-completed');
+                card.classList.add('bg-gray-900', 'border-gray-800', 'hover:shadow-primary-accent/40');
+            }
+        }
+
+        /**
+         * Event handler for checkbox clicks.
+         */
+        function handleCheckboxClick(event) {
+            const checkbox = event.target;
+            const isCompleted = checkbox.checked;
+            
+            const card = checkbox.closest('.module-card');
+            if (!card) return;
+
+            const moduleId = card.dataset.moduleId;
+            if (moduleId) {
+                updateModuleProgress(moduleId, isCompleted);
+                toggleCompletionStyle(card, isCompleted);
+            }
+        }
+        
+        // --- UI Control Functions (Including Font Size Persistence) ---
+
+        /** Maps a value from one range to another. */
+        const mapRange = (value, inMin, inMax, outMin, outMax) => {
+            return (value - inMin) * (outMax - outMin) / (inMax - inMin) + outMin;
+        };
+
+        let animationThrottle = false; 
+        const THROTTLE_TIME = 200; 
+
+        /** Triggers the sequential bounce CSS animation on each letter. */
+        function runBounceAnimation() {
+            const letters = textContainer.querySelectorAll('.letter');
+            const delayMs = 50; 
+            for (let i = 0; i < letters.length; i++) {
+                const letter = letters[i];
+                setTimeout(() => {
+                    letter.classList.remove('bouncing'); 
+                    void letter.offsetWidth; 
+                    letter.classList.add('bouncing');
+                    setTimeout(() => {
+                        letter.classList.remove('bouncing');
+                    }, 400);
+                }, i * delayMs);
+            }
+        }
+
+        /** Handles the color slider input event. */
+        function handleColorSliderChange(event) {
+            const value = parseInt(event.target.value);
+            const hue1 = Math.round(mapRange(value, 0, 100, 45, 180));
+            const hue2 = Math.round(mapRange(value, 0, 100, 320, 270));
+            
+            const color1 = `hsl(${hue1}, 90%, 65%)`;
+            const color2 = `hsl(${hue2}, 90%, 60%)`;
+            
+            textContainer.style.backgroundImage = `linear-gradient(to right, ${color1}, ${color2})`;
+            
+            if (animationThrottle) return;
+            animationThrottle = true;
+            runBounceAnimation();
+            setTimeout(() => {
+                animationThrottle = false;
+            }, THROTTLE_TIME);
+        }
+
+        /** Handles the font size slider input event and saves the value to localStorage. */
+        function handleFontSizeSliderChange(event) {
+            const value = parseInt(event.target.value);
+            const minSize = 14; 
+            const maxSize = 22;
+            const newSize = mapRange(value, 0, 100, minSize, maxSize);
+            
+            rootElement.style.fontSize = `${newSize}px`;
+
+            // Save the slider value to localStorage
+            try {
+                localStorage.setItem(FONT_SIZE_KEY, value);
+            } catch (e) {
+                console.error("Could not save font size to localStorage:", e);
+            }
+
+            const label = fontSizeSlider.previousElementSibling;
+            if (label) {
+                let indicator = value < 33 ? 'S' : value > 66 ? 'L' : 'M';
+                label.textContent = `Page Text Size (${indicator} / ${newSize.toFixed(1)}px)`;
+            }
+        }
+
+        /** Loads font size preference from localStorage on initial load. */
+        function loadLocalPreferences() {
+            const storedSizeValue = localStorage.getItem(FONT_SIZE_KEY);
+            if (storedSizeValue !== null) {
+                // Update slider value
+                fontSizeSlider.value = storedSizeValue;
+
+                // Immediately apply the style
+                const value = parseInt(storedSizeValue);
+                const minSize = 14; 
+                const maxSize = 22;
+                const newSize = mapRange(value, 0, 100, minSize, maxSize);
+                rootElement.style.fontSize = `${newSize}px`;
+
+                // Update label immediately
+                const label = fontSizeSlider.previousElementSibling;
+                if (label) {
+                    let indicator = value < 33 ? 'S' : value > 66 ? 'L' : 'M';
+                    label.textContent = `Page Text Size (${indicator} / ${newSize.toFixed(1)}px)`;
+                }
+            } else {
+                 // If no stored value, ensure default is applied and saved
+                 handleFontSizeSliderChange({ target: fontSizeSlider });
+            }
+        }
+        
+        // --- Initialization ---
+
+        function initApp() {
+            // Get elements after DOM is loaded
+            textContainer = document.getElementById('welcome-text-container');
+            colorSlider = document.getElementById('color-slider');
+            fontSizeSlider = document.getElementById('font-size-slider');
+            moduleCards = document.querySelectorAll('.module-card');
+            
+            // 1. Populate welcome text (for animation)
+            const textContent = "Welcome, Pratik";
+            textContainer.innerHTML = Array.from(textContent).map(char => {
+                return `<span class="letter">${char === ' ' ? '&nbsp;' : char}</span>`;
+            }).join('');
+            
+            // 2. Load and apply font size preference from localStorage
+            loadLocalPreferences();
+            
+            // 3. Load and apply module completion status from localStorage
+            loadModuleProgress(); 
+
+            // 4. Initialize Color Slider and animation
+            handleColorSliderChange({ target: colorSlider });
+
+            // 5. Attach event listeners
+            colorSlider.addEventListener('input', handleColorSliderChange);
+            fontSizeSlider.addEventListener('input', handleFontSizeSliderChange);
+            
+            // Attach event listeners to all checkboxes
+            document.querySelectorAll('.module-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', handleCheckboxClick);
+            });
+        }
+
+
+        // Start the application when the DOM is ready
+        window.onload = initApp;
+
+    </script>
+
+
+    <!-- Configure Tailwind to use a dark, artistic theme -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Bebas Neue', 'sans-serif'],
+                    },
+                    colors: {
+                        'dark-bg': '#0A0A1F', // Deep, dark indigo
+                        'primary-accent': '#6366F1', // Indigo 500
+                        'secondary-text': '#A5B4FC', // Indigo 300
+                        // Define the completion theme colors
+                        'completion-bg': '#14532D', // Darker forest green
+                        'completion-glow': '#34D399', // Emerald 400
+                    }
+                },
+            }
+        }
+    </script>
+    <style>
+        /* Fallback and base styles for the artistic dark theme */
+        body {
+            background-color: #0A0A1F;
+            font-family: 'Inter', sans-serif;
+            transition: font-size 0.2s ease;
+        }
+
+        /* Base styles for all module cards */
+        .module-card {
+            transition: all 0.3s ease, background-color 0.5s ease; 
+            position: relative;
+            overflow: hidden;
+            padding-bottom: 1.5rem; 
+            /* Initial inactive style */
+            background-color: #111827; /* Tailwind gray-900 */
+            border-color: #374151; /* Tailwind gray-700 */
+        }
+        /* Hover state for inactive cards */
+        .module-card:not(.module-completed):hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);
+            border-color: #6366F1;
+        }
+        
+        /* --- Completion Theme (Greenish-Blue) --- */
+        .module-completed {
+            /* Completion Background */
+            background: linear-gradient(135deg, #10B981, #065F46); /* Emerald/Dark Emerald Gradient */
+            border-color: #34D399; /* Emerald 400 border */
+            box-shadow: 0 0 20px rgba(52, 211, 153, 0.7); /* Green glow */
+        }
+
+        /* FIX: High contrast for text and icon inside completed modules */
+        .module-completed .module-icon, 
+        .module-completed h2 {
+            /* Use a light gray/white for visibility against the dark green background */
+            color: #F3F4F6 !important; 
+        }
+
+        /* Keep the checkmark visible over the dark background */
+        .module-checkbox {
+            accent-color: #34D399; /* Green checkmark color */
+            width: 1.5rem;
+            height: 1.5rem;
+            cursor: pointer;
+        }
+
+        .difficulty-tag {
+            font-size: 0.75rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 9999px;
+            font-weight: 600;
+        }
+        .beginner { background-color: #10B981; color: #064E3B; }
+        .intermediate { background-color: #FBBF24; color: #78350F; }
+        .advanced { background-color: #EF4444; color: #7F1D1D; }
+
+        /* --- Text Animation CSS --- */
+        #welcome-text-container span { display: inline-block; }
+        @keyframes bounce {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+            100% { transform: translateY(0); }
+        }
+        .bouncing { animation: bounce 0.4s ease-in-out; }
+        /* ---------------------------------- */
+
+        /* Profile Animation */
+        @keyframes gradient-animation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        #profile-picture-container {
+            padding: 4px;
+            background: linear-gradient(-45deg, #FF6B6B, #FBBF24, #10B981, #6366F1);
+            background-size: 400% 400%;
+            animation: gradient-animation 6s ease infinite;
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.6);
+        }
+        #profile-image { border: 4px solid #0A0A1F; }
+
+    </style>
+</head>
+<body class="bg-dark-bg text-gray-100 min-h-screen p-4 sm:p-8">
+
+    <!-- Main Container -->
+    <div class="max-w-6xl mx-auto">
+
+        <!-- Header -->
+        <header class="text-center py-8 mb-8 border-b border-primary-accent/30">
+
+            <!-- Profile Section -->
+            <div class="mb-8 flex flex-col items-center">
+                <div id="profile-picture-container" class="relative w-32 h-32 rounded-full shadow-xl">
+                    <img id="profile-image" 
+                         src="https://scontent.fixr5-1.fna.fbcdn.net/v/t39.30808-6/349541459_786121726277394_46920029509674220_n.jpg?_nc_cat=106&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=e5_af47ajz4Q7kNvwHE0OSX&_nc_oc=AdkLxAhCRMMcDneRCyensiC808INE5d2C4mXk8hsLgXVPycntOZAhlVAJ7pkbsfsY&_nc_zt=23&_nc_ht=scontent.fixr5-1.fna&_nc_gid=Ver-GD3u9WoYRl-kl2FsCQ&oh=00_Afd3ktdjrfvgjGbBmcLqV4n-AVSP5k_OnjCaLz1QfdzDiA&oe=68E9C68E" 
+                         alt="User Profile Picture" 
+                         class="w-full h-full object-cover rounded-full transition duration-300" 
+                         onerror="this.onerror=null; this.src='https://placehold.co/128x128/6366F1/FFFFFF?text=PFP';"
+                    >
+                </div>
+                
+                <div id="welcome-text-container" class="mt-4 text-4xl sm:text-5xl font-extrabold text-transparent bg-clip-text font-display tracking-wide flex justify-center">
+                    <!-- Text inserted by JavaScript -->
+                </div>
+
+                <div class="mt-6 p-4 bg-gray-900 border border-gray-800 rounded-lg shadow-xl w-full max-w-sm">
+                    <div class="flex flex-col items-center w-full">
+                        <input type="range" id="color-slider" min="0" max="100" value="0" class="w-full accent-primary-accent cursor-pointer appearance-none bg-gray-700 h-2 rounded-full shadow-inner">
+                    </div>
+                </div>
+            </div>
+
+            <h1 class="text-6xl sm:text-7xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-primary-accent to-secondary-text font-display">
+                Animate Mastery Path
+            </h1>
+            <p class="mt-4 text-xl text-secondary-text/80 italic">
+                Your 10-Module Adobe Animate Learning Syllabus
+            </p>
+        </header>
+
+        <!-- Module List Section -->
+        <main>
+            <div id="module-list" class="grid gap-6 md:grid-cols-2 lg:grid-cols-2">
+
+                <!-- Module 1 -->
+                <a href="#module-1" class="module-card rounded-xl p-6 shadow-xl block" data-module-id="module1">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-center">
+                            <!-- Icon -->
+                            <svg class="w-12 h-12 mr-4 flex-shrink-0 text-primary-accent module-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37a1.724 1.724 0 002.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                            <h2 class="text-2xl font-semibold text-primary-accent">1. Setup and Interface Mastery</h2>
+                        </div>
+                        <input type="checkbox" class="module-checkbox mt-2" id="module-checkbox-1">
+                    </div>
+                    <span class="difficulty-tag beginner">Beginner</span>
+                </a>
+
+                <!-- Module 2 -->
+                <a href="#module-2" class="module-card rounded-xl p-6 shadow-xl block" data-module-id="module2">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-center">
+                            <svg class="w-12 h-12 mr-4 flex-shrink-0 text-primary-accent module-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                            <h2 class="text-2xl font-semibold text-primary-accent">2. Basic Asset Creation and Import</h2>
+                        </div>
+                        <input type="checkbox" class="module-checkbox mt-2" id="module-checkbox-2">
+                    </div>
+                    <span class="difficulty-tag beginner">Beginner</span>
+                </a>
+
+                <!-- Module 3 -->
+                <a href="#module-3" class="module-card rounded-xl p-6 shadow-xl block" data-module-id="module3">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-center">
+                            <svg class="w-12 h-12 mr-4 flex-shrink-0 text-primary-accent module-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4M3 12h4M3 16h4M17 8h4M17 12h4M17 16h4M21 4a2 2 0 00-2-2H5a2 2 0 00-2 2v16a2 2 0 002 2h14a2 2 0 002-2V4z"></path></svg>
+                            <h2 class="text-2xl font-semibold text-primary-accent">3. Timeline and Basic Animation</h2>
+                        </div>
+                        <input type="checkbox" class="module-checkbox mt-2" id="module-checkbox-3">
+                    </div>
+                    <span class="difficulty-tag beginner">Beginner</span>
+                </a>
+
+                <!-- Module 4 -->
+                <a href="#module-4" class="module-card rounded-xl p-6 shadow-xl block" data-module-id="module4">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-center">
+                            <svg class="w-12 h-12 mr-4 flex-shrink-0 text-primary-accent module-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M10 14v5a2 2 0 002 2h0a2 2 0 002-2v-5m-4 0h4"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M10 14v5a2 2 0 002 2h0a2 2 0 002-2v-5m-4 0h4"></path></svg>
+                            <h2 class="text-2xl font-semibold text-primary-accent">4. Character Design and Rigging</h2>
+                        </div>
+                        <input type="checkbox" class="module-checkbox mt-2" id="module-checkbox-4">
+                    </div>
+                    <span class="difficulty-tag intermediate">Intermediate</span>
+                </a>
+
+                <!-- Module 5 -->
+                <a href="#module-5" class="module-card rounded-xl p-6 shadow-xl block" data-module-id="module5">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-center">
+                            <svg class="w-12 h-12 mr-4 flex-shrink-0 text-primary-accent module-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14V9.5a2.5 2.5 0 00-2.5-2.5H12"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 16l-3-3m0 0l-3 3m3-3v8m0 0h8"></path><circle cx="9" cy="4.5" r="1.5"></circle></svg>
+                            <h2 class="text-2xl font-semibold text-primary-accent">5. Advanced Character Animation</h2>
+                        </div>
+                        <input type="checkbox" class="module-checkbox mt-2" id="module-checkbox-5">
+                    </div>
+                    <span class="difficulty-tag intermediate">Intermediate</span>
+                </a>
+
+                <!-- Module 6 -->
+                <a href="#module-6" class="module-card rounded-xl p-6 shadow-xl block" data-module-id="module6">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-center">
+                            <svg class="w-12 h-12 mr-4 flex-shrink-0 text-primary-accent module-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L15 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-2-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                            <h2 class="text-2xl font-semibold text-primary-accent">6. Backgrounds, Composition, and Scene Building</h2>
+                        </div>
+                        <input type="checkbox" class="module-checkbox mt-2" id="module-checkbox-6">
+                    </div>
+                    <span class="difficulty-tag intermediate">Intermediate</span>
+                </a>
+
+                <!-- Module 7 -->
+                <a href="#module-7" class="module-card rounded-xl p-6 shadow-xl block" data-module-id="module7">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-center">
+                            <svg class="w-12 h-12 mr-4 flex-shrink-0 text-primary-accent module-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101M16.929 17.071l.68-1.442v.358m0 0l-4-4a4 4 0 01-5.656 0l-4-4"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6.172 13.828a4 4 0 005.656 0l4-4a4 4 0 10-5.656-5.656l-1.102 1.101m-.68 1.944l4 4a4 4 0 105.656-5.656l-4-4"></path></svg>
+                            <h2 class="text-2xl font-semibold text-primary-accent">7. Combining Scenes and Multi-Scene Workflows</h2>
+                        </div>
+                        <input type="checkbox" class="module-checkbox mt-2" id="module-checkbox-7">
+                    </div>
+                    <span class="difficulty-tag advanced">Advanced</span>
+                </a>
+
+                <!-- Module 8 -->
+                <a href="#module-8" class="module-card rounded-xl p-6 shadow-xl block" data-module-id="module8">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-center">
+                            <svg class="w-12 h-12 mr-4 flex-shrink-0 text-primary-accent module-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4M4 19h4m5-15v2m0 6v2m0 6v2M12 4v16M19 3v4M17 5h4m-3 14v-2m-2-2h4"></path></svg>
+                            <h2 class="text-2xl font-semibold text-primary-accent">8. Enhancing Animation Quality and Effects</h2>
+                        </div>
+                        <input type="checkbox" class="module-checkbox mt-2" id="module-checkbox-8">
+                    </div>
+                    <span class="difficulty-tag advanced">Advanced</span>
+                </a>
+
+                <!-- Module 9 -->
+                <a href="#module-9" class="module-card rounded-xl p-6 shadow-xl block" data-module-id="module9">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-center">
+                            <svg class="w-12 h-12 mr-4 flex-shrink-0 text-primary-accent module-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                            <h2 class="text-2xl font-semibold text-primary-accent">9. Optimization and Fast Production Workflows</h2>
+                        </div>
+                        <input type="checkbox" class="module-checkbox mt-2" id="module-checkbox-9">
+                    </div>
+                    <span class="difficulty-tag advanced">Advanced</span>
+                </a>
+
+                <!-- Module 10 -->
+                <a href="#module-10" class="module-card rounded-xl p-6 shadow-xl block" data-module-id="module10">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-center">
+                            <svg class="w-12 h-12 mr-4 flex-shrink-0 text-primary-accent module-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2z"></path></svg>
+                            <h2 class="text-2xl font-semibold text-primary-accent">10. Capstone Projects and Professional Application</h2>
+                        </div>
+                        <input type="checkbox" class="module-checkbox mt-2" id="module-checkbox-10">
+                    </div>
+                    <span class="difficulty-tag advanced">Advanced</span>
+                </a>
+            </div>
+        </main>
+
+        <!-- Configuration Panel (Sliders) -->
+        <div class="mt-12 p-6 bg-gray-900 border border-gray-800 rounded-xl shadow-2xl flex justify-center">
+            
+            <div class="flex flex-col items-center w-full max-w-xs">
+                <label for="font-size-slider" class="text-lg font-medium mb-2 text-secondary-text">Page Text Size (S / 14.8px)</label>
+                <input type="range" id="font-size-slider" min="0" max="100" value="10" class="w-full accent-primary-accent cursor-pointer appearance-none bg-gray-700 h-2 rounded-full shadow-inner">
+            </div>
+
+        </div>
+
+        <!-- Footer -->
+        <footer class="text-center mt-12 pt-6 border-t border-gray-800">
+            <p class="text-gray-500 text-sm">Learning Tracker &copy; 2024</p>
+        </footer>
+
+    </div>
+</body>
+</html>
+
