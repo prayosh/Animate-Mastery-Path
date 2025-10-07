@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 3: Timeline and Basic Animation</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Configure Tailwind -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Bebas Neue', 'sans-serif'],
+                    },
+                },
+            }
+        }
+    </script>
+    <style>
+        /* --- 1. CSS Variables for Customization --- */
+        :root {
+            /* Default Dark Mode Colors */
+            --bg-color: #0A0A1F;
+            --text-color: #E5E7EB;
+            --card-bg: #111827;
+            --border-color: #374151;
+            --primary-color: #6366F1; /* Default Indigo (Main Headings) */
+            --secondary-color: #34D399; /* Default Emerald (Exercise Headers/Accents) */
+            --tertiary-color: #A5B4FC; /* Default Light Purple (Bullet Strong Text) */
+            --highlight-color: #FBBF24; /* Yellow for specific elements like keyboard shortcuts */
+        }
+
+        /* Light Mode Overrides */
+        .light-mode {
+            --bg-color: #FFFFFF;
+            --text-color: #1F2937;
+            --card-bg: #F9FAFB;
+            --border-color: #E5E7EB;
+            --highlight-color: #94A3B8;
+        }
+
+        /* --- 2. Dynamic Styling using Variables --- */
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+            min-height: 100vh;
+        }
+
+        .header-title {
+             /* Uses CSS variables for the gradient */
+            background-image: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        h2 {
+            color: var(--primary-color); /* Uses Primary Color */
+        }
+
+        /* Exercise headers and quiz headers use secondary color */
+        #section-6 h2, #section-7 h2 {
+            color: var(--secondary-color);
+        }
+
+        /* Bullet point strong text uses the new tertiary color */
+        .strong-accent {
+            color: var(--tertiary-color);
+        }
+
+        .border-primary {
+            border-color: var(--primary-color) !important;
+        }
+        
+        .bg-card {
+            background-color: var(--card-bg);
+        }
+
+        .syllabus-list li::marker {
+            color: var(--primary-color); /* Main bullet marker remains Primary */
+        }
+        
+        /* Custom list style for deeper indentation */
+        .syllabus-list li {
+            margin-bottom: 0.5rem;
+        }
+        .syllabus-list ul {
+            padding-left: 1.5em; /* Use em to scale with font size */
+            margin-top: 0.5em;
+            list-style-type: disc;
+        }
+        .syllabus-list ul ul {
+            list-style-type: circle;
+        }
+        .syllabus-list ul ul ul {
+            list-style-type: square;
+        }
+
+        /* Styling for the hands-on sections */
+        .hands-on-box {
+            border: 2px solid;
+            border-image: linear-gradient(to right, var(--primary-color), var(--secondary-color)) 1;
+            box-shadow: 0 5px 20px rgba(99, 102, 241, 0.2);
+            position: relative;
+            overflow: hidden;
+            background-color: var(--card-bg);
+            border-radius: 0.5rem;
+        }
+
+        .keyboard-shortcut {
+            color: var(--highlight-color);
+            font-weight: 600;
+        }
+
+        /* --- 3. Customization Panel Styles --- */
+        #customizationPanel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 80vw;
+            max-width: 300px;
+            height: 100%;
+            z-index: 1000;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease-in-out;
+            box-shadow: 4px 0 15px rgba(0, 0, 0, 0.5);
+            padding: 1.5rem;
+            background-color: var(--card-bg);
+            border-right: 1px solid var(--border-color);
+            color: var(--text-color);
+            overflow-y: auto;
+        }
+        #customizationPanel.open {
+            transform: translateX(0);
+        }
+
+        /* Button floating in the bottom right */
+        #menuToggleBtn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1001;
+            width: 56px;
+            height: 56px;
+            background-color: var(--primary-color);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+            transition: background-color 0.3s;
+        }
+
+        /* Slider Toggle CSS (for aesthetics) - Used for Theme only */
+        .switch .slider {
+            background-color: var(--border-color);
+        }
+        .switch input:checked + .slider {
+            background-color: var(--primary-color);
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+        input:checked + .slider:before {
+            transform: translateX(16px);
+        }
+        
+        /* Style the range input track for the font slider */
+        #fontSizeSlider::-webkit-slider-runnable-track {
+            height: 8px;
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+        #fontSizeSlider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            background: var(--primary-color);
+            cursor: pointer;
+            border-radius: 50%;
+            margin-top: -5px; 
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+        }
+        
+        /* Notes Box Styling */
+        #notesBox {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        /* --- 4. Checkbox Styling (Mark as Read) --- */
+        .section-checkbox {
+            /* Force custom styling to override native white background */
+            -webkit-appearance: none; 
+            appearance: none;
+            
+            /* Sizing and basic style */
+            height: 24px;
+            width: 24px;
+            min-width: 24px;
+            min-height: 24px;
+            
+            /* Apply dark theme colors for unchecked state */
+            border: 2px solid var(--border-color);
+            background-color: var(--card-bg); 
+            border-radius: 6px;
+            margin: 0;
+            flex-shrink: 0; 
+            cursor: pointer;
+            
+            /* Positioning for custom checkmark */
+            position: relative; 
+            display: inline-block;
+            transition: background-color 0.1s ease-in-out;
+        }
+
+        /* Checked state: use secondary color for background */
+        .section-checkbox:checked {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+        
+        /* Custom checkmark using ::after on checked state */
+        .section-checkbox:checked::after {
+            content: '';
+            position: absolute;
+            top: 4px;
+            left: 8px;
+            width: 6px;
+            height: 12px;
+            /* White checkmark for high contrast on secondary color background */
+            border: solid white;
+            border-width: 0 3px 3px 0;
+            transform: rotate(45deg);
+        }
+        
+        /* Ensure the h2 takes available space in the flex container */
+        .section-header-flex h2 {
+            flex-shrink: 1;
+            margin-right: 1rem;
+        }
+        
+    </style>
+</head>
+<body>
+
+    <!-- Customization Panel (Slides out from left) -->
+    <div id="customizationPanel">
+
+        <!-- Syllabus Overview Link -->
+        <a href="https://prayosh.github.io/Animate-Mastery-Path/home.html" 
+           class="flex items-center justify-center w-full p-3 mb-6 font-semibold rounded-lg transition duration-200 shadow-lg hover:shadow-xl" 
+           style="background-color: var(--primary-color); color: var(--card-bg);">
+            <!-- Syllabus Icon (Document with Lines) -->
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            Syllabus Overview
+        </a>
+        <!-- END Syllabus Overview Link -->
+
+        <!-- Theme Settings Heading -->
+        <h2 class="text-2xl font-bold mb-4 border-b pb-2" style="color: var(--primary-color); border-bottom-color: var(--border-color);">Theme Settings</h2>
+
+        <!-- Theme Toggle -->
+        <div class="mb-6">
+            <label class="block text-sm font-medium mb-2" style="color: var(--secondary-color);">Theme Mode</label>
+            <div class="flex items-center space-x-4 p-2 rounded-lg" style="background-color: var(--border-color);">
+                <span class="text-sm">Dark</span>
+                <label class="switch relative inline-block w-10 h-6">
+                    <input type="checkbox" id="themeToggle" class="opacity-0 w-0 h-0">
+                    <span class="slider absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full transition-all duration-300"></span>
+                </label>
+                <span class="text-sm">Light</span>
+            </div>
+        </div>
+
+        <!-- Primary Color Picker -->
+        <div class="mb-6">
+            <label for="primaryColor" class="block text-sm font-medium mb-2" style="color: var(--secondary-color);">Primary Colour (Main Headings)</label>
+            <input type="color" id="primaryColor" value="#6366F1" class="w-full h-10 border-none rounded-lg p-0 cursor-pointer">
+        </div>
+
+        <!-- Secondary Color Picker -->
+        <div class="mb-6">
+            <label for="secondaryColor" class="block text-sm font-medium mb-2" style="color: var(--secondary-color);">Secondary Colour (Exercise Headers)</label>
+            <input type="color" id="secondaryColor" value="#34D399" class="w-full h-10 border-none rounded-lg p-0 cursor-pointer">
+        </div>
+
+        <!-- Tertiary Color Picker -->
+        <div class="mb-8">
+            <label for="tertiaryColor" class="block text-sm font-medium mb-2" style="color: var(--secondary-color);">Accent Text Colour (List Items)</label>
+            <input type="color" id="tertiaryColor" value="#A5B4FC" class="w-full h-10 border-none rounded-lg p-0 cursor-pointer">
+        </div>
+        
+        <!-- Font Size Slider -->
+        <div class="mb-8">
+            <label for="fontSizeSlider" class="block text-sm font-medium mb-3" style="color: var(--secondary-color);">Text Font Size</label>
+            <input type="range" id="fontSizeSlider" min="14" max="20" step="1" value="16" class="w-full h-2 rounded-lg appearance-none cursor-pointer">
+            <div class="flex justify-between text-xs mt-1 text-gray-400">
+                <span>Small (14px)</span>
+                <span>Large (20px)</span>
+            </div>
+        </div>
+
+
+        <!-- Reset Button -->
+        <button onclick="setDefaultSettings()" class="w-full px-4 py-2 font-semibold rounded-lg transition duration-200" style="background-color: var(--primary-color); color: var(--card-bg);">
+            Reset to Default Theme
+        </button>
+    </div>
+
+    <!-- Menu Toggle Button (Bottom Right) -->
+    <button id="menuToggleBtn" onclick="togglePanel()" class="fixed bottom-5 right-5 w-14 h-14 rounded-full flex items-center justify-center text-white shadow-xl transition-all duration-300 hover:scale-110">
+        <svg id="menuIcon" class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        <svg id="closeIcon" class="w-7 h-7 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+    </button>
+
+    <!-- Main Content Container -->
+    <div class="max-w-4xl mx-auto pb-16">
+
+        <!-- Header -->
+        <header class="text-center py-6 mb-8 border-b" style="border-bottom-color: var(--primary-color);">
+            <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight font-display header-title">
+                Module 3: Timeline and Basic Animation
+            </h1>
+            <p class="mt-2 text-xl italic font-medium" style="color: var(--secondary-color);">
+                (Beginner)
+            </p>
+        </header>
+
+        <!-- Progress Bar Container -->
+        <div class="mb-8 p-3 rounded-lg bg-card border border-border-color">
+            <div class="flex justify-between items-center mb-1 text-sm font-medium">
+                <span>Progress</span>
+                <span id="progressPercentage">0%</span>
+            </div>
+            <div id="progressBarContainer" class="w-full h-3 rounded-full overflow-hidden" style="background-color: var(--border-color);">
+                <div id="progressBar" class="h-full transition-all duration-500" style="background-color: var(--secondary-color); width: 0%;"></div>
+            </div>
+        </div>
+
+        <!-- Focus Text -->
+        <div class="mb-8 p-4 rounded-lg border border-border-color bg-card">
+            <p class="text-lg leading-relaxed">
+                <strong class="strong-accent">Focus:</strong> Introducing animation basics safely for beginners. This module bridges the gap from static assets to simple motion, teaching how to use the Timeline for organizing and animating elements essential for cartoons, movies, series, and marketing ads. You'll learn to manage layers and frames, create your first tweens for movement, and apply basic timing principles without overwhelming complexity. Additional concepts like frame types, onion skinning for previewing motion, and beginner troubleshooting are included to build intuitive understanding. Multiple hands-on exercises emphasize practical application, ensuring you can create and preview simple animations confidently before advancing to character rigging.
+            </p>
+            <p class="text-lg leading-relaxed mt-4">
+                <strong class="strong-accent">Learning Objectives:</strong>
+            </p>
+            <ul class="list-disc ml-6 mt-2 space-y-1 text-gray-400">
+                <li>Master the Timeline for organizing and timing animations.</li>
+                <li>Create basic tweens to animate symbols (e.g., position, scale) for smooth motion in ads or cartoon elements.</li>
+                <li>Understand core animation principles like timing and easing to make movements feel natural.</li>
+                <li>Preview and refine animations using playback tools.</li>
+                <li>Troubleshoot common beginner animation issues and adopt efficiency habits for faster workflows.</li>
+            </ul>
+        </div>
+
+
+        <!-- Syllabus Content -->
+        <div class="syllabus-list space-y-8">
+            
+            <!-- 1. Timeline Essentials -->
+            <section id="section-1">
+                <div class="section-header-flex flex justify-between items-center border-b-2 border-primary/40 pb-2">
+                    <h2 class="text-3xl font-bold">Timeline Essentials:</h2>
+                    <div class="flex items-center space-x-2">
+                        <label for="check-1" class="text-sm font-medium text-gray-400 hidden sm:inline cursor-pointer">Mark Read</label>
+                        <input type="checkbox" id="check-1" data-section-id="section-1" onchange="toggleSectionRead(this)" class="section-checkbox cursor-pointer">
+                    </div>
+                </div>
+                <ul class="ml-4 space-y-3 pt-4">
+                    <li>
+                        <strong class="strong-accent">Layers:</strong> Creating new layers (<code class="keyboard-shortcut">Insert > Timeline > Layer</code> or <code class="keyboard-shortcut">Ctrl+Shift+N</code>), naming layers descriptively (double-click in Timeline header, e.g., "Background_Layer"), locking layers (click lock icon to prevent accidental edits), hiding layers (eye icon for temporary visibility off), deleting/reordering layers (drag to move).
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Frames and Keyframes:</strong> Understanding frame spans (filled vs. empty), inserting keyframes (<code class="keyboard-shortcut">F6</code> for regular, <code class="keyboard-shortcut">F7</code> for blank), extending frames (<code class="keyboard-shortcut">F5</code> to add in-between frames), converting frames (right-click > Convert to Keyframe).
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Frame Types:</strong> Normal frames (hold content), blank keyframes (start new content without copying previous), understanding the playhead (scrubbing to preview).
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Playback Controls:</strong> Playhead movement (arrow keys or drag), <code class="keyboard-shortcut">Enter/Spacebar</code> for play/stop, looping preview (<code class="keyboard-shortcut">Control > Loop Playback</code>), frame rate adjustment (Modify > Document), previewing at different speeds.
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Additional Concepts:</strong>
+                        <ul class="list-disc ml-4">
+                            <li><strong>Onion Skinning (Basic):</strong> Enabling onion skin (click onion icon in Timeline, adjust range for 1-2 frames) to see previous/next frames faintly for motion preview; tint/opacity settings for clarity.</li>
+                            <li><strong>Timeline Zoom:</strong> Using Timeline scrubber zoom (drag slider or +/- shortcuts) for precise keyframe placement.</li>
+                            <li><strong>Layer Properties:</strong> Outline mode (for wireframe view), guide layers (for non-exporting references), mask layers (basic intro for future composition).</li>
+                        </ul>
+                    </li>
+                </ul>
+            </section>
+
+            <!-- 2. Tweening Introduction -->
+            <section id="section-2">
+                <div class="section-header-flex flex justify-between items-center border-b-2 border-primary/40 pb-2 mt-8">
+                    <h2 class="text-3xl font-bold">Tweening Introduction:</h2>
+                    <div class="flex items-center space-x-2">
+                        <label for="check-2" class="text-sm font-medium text-gray-400 hidden sm:inline cursor-pointer">Mark Read</label>
+                        <input type="checkbox" id="check-2" data-section-id="section-2" onchange="toggleSectionRead(this)" class="section-checkbox cursor-pointer">
+                    </div>
+                </div>
+                <ul class="ml-4 space-y-3 pt-4">
+                    <li>
+                        <strong class="strong-accent">Classic Tween:</strong> Creating (select frames, right-click > Create Classic Tween), animating simple position/scale/rotation changes (keyframe start/end positions), properties like ease (none by default), span duration (drag end frame).
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Motion Tween:</strong> Converting symbols to Motion Tween (right-click > Create Motion Tween), using motion paths (Auto Path for straight lines, custom paths with Selection tool), animating along paths (e.g., curved movement for character walks).
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Easing:</strong> Preset eases (Properties panel: Ease dropdown—Linear for constant speed, Ease In/Out for acceleration/deceleration), basic explanation of why easing mimics real physics (e.g., ball bounce starts slow, speeds up).
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Tween Requirements:</strong> Must use symbols (not raw shapes) for Classic/Motion tweens; differences (Classic for basic, Motion for advanced paths/color changes).
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Additional Concepts:</strong>
+                        <ul class="list-disc ml-4">
+                            <li><strong>Tween Properties:</strong> Rotation (clockwise/counterclockwise), scale X/Y independently, alpha for fades; motion editor intro (Window > Motion Editor for graphs, basic curves).</li>
+                            <li><strong>Removing/Editing Tweens:</strong> Right-click > Remove Tween, splitting spans (double-click tween line), copying tween properties (Edit > Copy/Paste Properties).</li>
+                            <li><strong>Tween Limitations:</strong> No shape morphing (for that, use Shape Tween later); ensuring no gaps in spans.</li>
+                        </ul>
+                    </li>
+                </ul>
+            </section>
+
+            <!-- 3. Beginner Animation Principles -->
+            <section id="section-3">
+                <div class="section-header-flex flex justify-between items-center border-b-2 border-primary/40 pb-2 mt-8">
+                    <h2 class="text-3xl font-bold">Beginner Animation Principles:</h2>
+                    <div class="flex items-center space-x-2">
+                        <label for="check-3" class="text-sm font-medium text-gray-400 hidden sm:inline cursor-pointer">Mark Read</label>
+                        <input type="checkbox" id="check-3" data-section-id="section-3" onchange="toggleSectionRead(this)" class="section-checkbox cursor-pointer">
+                    </div>
+                </div>
+                <ul class="ml-4 space-y-3 pt-4">
+                    <li>
+                        <strong class="strong-accent">Timing Basics:</strong> Frame rates (e.g., 24 fps = 24 frames per second for cinematic feel in cartoons, 30 fps for smoother ads), simple spacing (even keyframes for constant speed, clustered for acceleration).
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Core Principles Intro:</strong>
+                        <ul class="list-disc ml-4">
+                            <li><strong>Timing and Spacing:</strong> Placing keyframes closer for fast motion, farther for slow (e.g., quick ad pop-up vs. slow character approach).</li>
+                            <li><strong>Anticipation and Follow-Through:</strong> Basic tween setup (e.g., slight reverse motion before forward for anticipation).</li>
+                            <li><strong>Squash and Stretch:</strong> Scaling tweens to deform shapes slightly (e.g., ball flattens on bounce, but using symbols for simplicity).</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Additional Concepts:</strong>
+                        <ul class="list-disc ml-4">
+                            <li><strong>Frame-by-Frame Tease:</strong> Brief mention (manual drawing per frame, but defer for advanced; use blank keyframes for placeholders).</li>
+                            <li><strong>Real-World Application:</strong> How timing affects storytelling (short tweens for punchy ads, longer for narrative in series).</li>
+                        </ul>
+                    </li>
+                </ul>
+            </section>
+
+            <!-- 4. Troubleshooting for Beginners -->
+            <section id="section-4">
+                <div class="section-header-flex flex justify-between items-center border-b-2 border-primary/40 pb-2 mt-8">
+                    <h2 class="text-3xl font-bold">Troubleshooting for Beginners:</h2>
+                    <div class="flex items-center space-x-2">
+                        <label for="check-4" class="text-sm font-medium text-gray-400 hidden sm:inline cursor-pointer">Mark Read</label>
+                        <input type="checkbox" id="check-4" data-section-id="section-4" onchange="toggleSectionRead(this)" class="section-checkbox cursor-pointer">
+                    </div>
+                </div>
+                <ul class="ml-4 space-y-3 pt-4">
+                    <li>
+                        <strong class="strong-accent">Common Errors:</strong>
+                        <ul class="list-disc ml-4">
+                            <li><strong>Tween won't create:</strong> Object not a symbol (convert first), or raw shape used (must be symbol for Classic/Motion).</li>
+                            <li><strong>Jerky animation:</strong> Missing frames (<code class="keyboard-shortcut">F5</code> to extend), or no easing (add presets).</li>
+                            <li><strong>Playback issues:</strong> Playhead not moving (check if <code class="keyboard-shortcut">Enter</code> is pressed, or frame rate too low), onion skin overwhelming (reduce range).</li>
+                            <li><strong>Layer conflicts:</strong> Animation on locked layer (unlock first), or hidden layer not previewing (show it).</li>
+                            <li><strong>Solutions:</strong> Check symbol type in Library, use Help (<code class="keyboard-shortcut">F1</code>) for "tween errors," test in short spans first, save and restart Animate for glitches.</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Additional Concepts:</strong> Auto-recovery for crashes during preview, checking document frame rate mismatches.
+                    </li>
+                </ul>
+            </section>
+
+            <!-- 5. Efficiency Tips -->
+            <section id="section-5">
+                <div class="section-header-flex flex justify-between items-center border-b-2 border-primary/40 pb-2 mt-8">
+                    <h2 class="text-3xl font-bold">Efficiency Tips:</h2>
+                    <div class="flex items-center space-x-2">
+                        <label for="check-5" class="text-sm font-medium text-gray-400 hidden sm:inline cursor-pointer">Mark Read</label>
+                        <input type="checkbox" id="check-5" data-section-id="section-5" onchange="toggleSectionRead(this)" class="section-checkbox cursor-pointer">
+                    </div>
+                </div>
+                <ul class="ml-4 space-y-3 pt-4">
+                    <li>
+                        <strong class="strong-accent">Copy/Paste Keyframes:</strong> Select keyframe (right-click > Copy Keyframes), paste to reuse motions (e.g., duplicate bounce for multiple balls).
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Keyboard Shortcuts:</strong> <code class="keyboard-shortcut">F6/F7</code> for keyframes, <code class="keyboard-shortcut">F5</code> for frames, <code class="keyboard-shortcut">Ctrl+Enter</code> for full preview, <code class="keyboard-shortcut">Ctrl+L</code> for library quick access.
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Workflow Habits:</strong> Always name layers/keyframes (add notes via layer comments), use onion skin sparingly to avoid confusion, preview frequently (short loops) to catch issues early.
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Asset Prep:</strong> Pre-convert all assets to symbols before animating to avoid interruptions.
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Time-Savers:</strong> Use motion guides for paths (drag to curve), batch-extend multiple layers (select all, <code class="keyboard-shortcut">F5</code>).
+                    </li>
+                </ul>
+            </section>
+
+            <!-- 6. Hands-On Exercises -->
+            <section id="section-6" class="mt-12">
+                <div class="section-header-flex flex justify-between items-center border-b-2 pb-2 mb-6" style="border-bottom-color: var(--secondary-color);">
+                    <h2 class="text-3xl font-bold" style="color: var(--secondary-color);">Hands-On Exercises (Practice for Reinforcement):</h2>
+                    <div class="flex items-center space-x-2">
+                        <label for="check-6" class="text-sm font-medium text-gray-400 hidden sm:inline cursor-pointer">Mark Read</label>
+                        <input type="checkbox" id="check-6" data-section-id="section-6" onchange="toggleSectionRead(this)" class="section-checkbox cursor-pointer">
+                    </div>
+                </div>
+                <div class="space-y-6">
+                    <div class="hands-on-box p-6">
+                        <h3 class="text-xl font-semibold mb-2" style="color: var(--secondary-color);">Exercise 1: Timeline Organization (Time: 10-15 minutes)</h3>
+                        <ul class="list-disc ml-4 text-gray-400 space-y-1">
+                            <li>Create a new document (1280x720, 24 fps), add 3 layers (name them "BG", "Object", "Test"), insert 10 frames on each (<code class="keyboard-shortcut">F5</code>), lock/hide one layer, create a blank keyframe (<code class="keyboard-shortcut">F7</code>) on frame 5 of another, enable onion skin and scrub playhead to preview.</li>
+                        </ul>
+                    </div>
+                    <div class="hands-on-box p-6">
+                        <h3 class="text-xl font-semibold mb-2" style="color: var(--secondary-color);">Exercise 2: Classic Tween Basics (Time: 15-20 minutes)</h3>
+                        <ul class="list-disc ml-4 text-gray-400 space-y-1">
+                            <li>On the "Object" layer, add a rectangle symbol, create a **Classic Tween** over 24 frames (position from left to right, scale from 50% to 100%), apply **Ease Out** preset, play preview and adjust timing by shortening span.</li>
+                        </ul>
+                    </div>
+                    <div class="hands-on-box p-6">
+                        <h3 class="text-xl font-semibold mb-2" style="color: var(--secondary-color);">Exercise 3: Motion Tween with Path (Time: 20-25 minutes)</h3>
+                        <ul class="list-disc ml-4 text-gray-400 space-y-1">
+                            <li>Import or draw an oval symbol (as a "ball"), create a **Motion Tween** over 30 frames, draw a **curved path** (use Selection to bend), animate the ball along it with Ease In/Out, preview looping. Add a simple scale tween for "bounce" effect.</li>
+                        </ul>
+                    </div>
+                    <div class="hands-on-box p-6">
+                        <h3 class="text-xl font-semibold mb-2" style="color: var(--secondary-color);">Exercise 4: Principles and Troubleshooting Drill (Time: 15-20 minutes)</h3>
+                        <ul class="list-disc ml-4 text-gray-400 space-y-1">
+                            <li>Animate a shape with poor timing (e.g., too fast, no easing—note jerkiness), then fix by adding spacing (more frames at start/end) and easing. Intentionally try tween on a non-symbol (observe error), convert to symbol, and recreate. Save all as separate files.</li>
+                        </ul>
+                    </div>
+                    <div class="hands-on-box p-6">
+                        <h3 class="text-xl font-semibold mb-2" style="color: var(--secondary-color);">Project Extension: Combining Tweens (Time: 20-30 minutes)</h3>
+                        <ul class="list-disc ml-4 text-gray-400 space-y-1">
+                            <li>Combine Exercises 2-3 into one file: Animate a "rolling ball" (oval symbol) across stage with motion path, add a background layer, preview full animation, and export a quick SWF or video preview.</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 7. Self-Assessment Quiz -->
+            <section id="section-7" class="mt-12 p-6 rounded-xl bg-card border border-border-color">
+                <div class="section-header-flex flex justify-between items-center pb-2 mb-4" style="border-bottom: 1px solid var(--border-color);">
+                    <h2 class="text-3xl font-bold" style="color: var(--secondary-color);">Self-Assessment Quiz:</h2>
+                    <div class="flex items-center space-x-2">
+                        <label for="check-7" class="text-sm font-medium text-gray-400 hidden sm:inline cursor-pointer">Mark Read</label>
+                        <input type="checkbox" id="check-7" data-section-id="section-7" onchange="toggleSectionRead(this)" class="section-checkbox cursor-pointer">
+                    </div>
+                </div>
+                <ul class="list-disc ml-4 space-y-3 text-gray-300 pt-4">
+                    <li>What shortcut inserts a keyframe? (<strong class="strong-accent">Answer: F6</strong>)</li>
+                    <li>Difference between Classic and Motion Tween? (<strong class="strong-accent">Answer: Classic for basic properties; Motion for paths and advanced edits.</strong>)</li>
+                    <li>Why use easing in tweens? (<strong class="strong-accent">Answer: For natural acceleration/deceleration, mimicking physics.</strong>)</li>
+                    <li>How do you enable looping preview? (<strong class="strong-accent">Answer: Control > Loop Playback or check the option.</strong>)</li>
+                    <li>Name one animation principle and how to apply it basically. (<strong class="strong-accent">Answer: E.g., Timing—adjust frame spans for speed.</strong>)</li>
+                    <li>Describe a common tween error and fix. (<strong class="strong-accent">Answer: E.g., "Tween not working"—Object must be a symbol; convert via F8.</strong>)</li>
+                </ul>
+                <p class="text-gray-400 mt-4 italic">
+                    This expanded module provides a safe, detailed entry into animation, with added concepts like onion skinning and frame types, plus multiple exercises to practice progressively. Focus on previewing often to develop an eye for motion. Complete all before Module 4 to prepare for character-specific animation.
+                </p>
+            </section>
+        </div>
+
+        <!-- Notes Section -->
+        <section class="mt-16">
+            <h2 class="text-3xl font-bold border-b-2 pb-2 mb-4" style="color: var(--primary-color); border-bottom-color: var(--border-color);">My Personal Notes</h2>
+            <p class="text-sm text-gray-400 mb-3">These notes are saved automatically in your browser for Module 3.</p>
+            <textarea id="notesBox" rows="10" placeholder="Type your notes, reminders, or specific difficulties here..." class="w-full p-4 rounded-lg focus:outline-none focus:ring-2" style="focus-ring-color: var(--primary-color);"></textarea>
+        </section>
+
+        <!-- Final Instruction -->
+        <p class="mt-12 text-center text-lg italic text-gray-400">
+            Complete all exercises before moving to Module 4 to ensure readiness for advanced animation.
+        </p>
+
+    </div>
+
+    <!-- JavaScript for Theme, Color, Font, Progress Control, and Notes -->
+    <script>
+        const PANEL_ID = 'customizationPanel';
+        const BODY = document.body;
+        const PANEL = document.getElementById(PANEL_ID);
+        const MENU_TOGGLE_BTN = document.getElementById('menuToggleBtn');
+        const PRIMARY_COLOR_INPUT = document.getElementById('primaryColor');
+        const SECONDARY_COLOR_INPUT = document.getElementById('secondaryColor');
+        const TERTIARY_COLOR_INPUT = document.getElementById('tertiaryColor');
+        const FONT_SIZE_SLIDER = document.getElementById('fontSizeSlider');
+        const THEME_TOGGLE = document.getElementById('themeToggle');
+        const NOTES_BOX = document.getElementById('notesBox');
+        const MENU_ICON = document.getElementById('menuIcon');
+        const CLOSE_ICON = document.getElementById('closeIcon');
+
+        // Progress elements
+        const PROGRESS_BAR = document.getElementById('progressBar');
+        const PROGRESS_PERCENTAGE_SPAN = document.getElementById('progressPercentage');
+        
+        // --- Storage keys (Unique for Module 3) ---
+        const PROGRESS_STORAGE_KEY = 'module3Progress';
+        const NOTES_STORAGE_KEY = 'module3Notes';
+        
+        // All section IDs for this module (7 sections)
+        const SECTION_IDS = [
+            'section-1', 'section-2', 'section-3', 'section-4',
+            'section-5', 'section-6', 'section-7'
+        ];
+        
+        let sectionStatus = {}; 
+
+        const DEFAULT_SETTINGS = {
+            isDark: true,
+            primary: '#6366F1', // Indigo
+            secondary: '#34D399', // Emerald
+            tertiary: '#A5B4FC', // Light Purple
+            fontSize: 16, // Default base size in pixels
+        };
+
+        // --- Core Functions: Settings ---
+
+        /** Loads settings from localStorage and applies them. */
+        function loadSettings() {
+            // Theme settings are shared across modules for consistency
+            const savedSettings = JSON.parse(localStorage.getItem('themeSettings'));
+            let currentSettings;
+
+            if (savedSettings) {
+                currentSettings = { ...DEFAULT_SETTINGS, ...savedSettings };
+            } else {
+                currentSettings = DEFAULT_SETTINGS;
+            }
+            
+            // Set input values to current state
+            THEME_TOGGLE.checked = !currentSettings.isDark;
+            PRIMARY_COLOR_INPUT.value = currentSettings.primary;
+            SECONDARY_COLOR_INPUT.value = currentSettings.secondary;
+            TERTIARY_COLOR_INPUT.value = currentSettings.tertiary;
+            FONT_SIZE_SLIDER.value = currentSettings.fontSize;
+
+            applySettings(currentSettings);
+        }
+
+        /** Saves current settings to localStorage. */
+        function saveSettings(settings) {
+            localStorage.setItem('themeSettings', JSON.stringify(settings));
+        }
+
+        /** Applies the theme, colors, and font size to the document. */
+        function applySettings(settings) {
+            const root = document.documentElement;
+
+            // Apply Theme Mode
+            if (settings.isDark) {
+                BODY.classList.remove('light-mode');
+                root.style.setProperty('--bg-color', '#0A0A1F');
+                root.style.setProperty('--text-color', '#E5E7EB');
+                root.style.setProperty('--card-bg', '#111827');
+                root.style.setProperty('--border-color', '#374151');
+                root.style.setProperty('--highlight-color', '#FBBF24');
+            } else {
+                BODY.classList.add('light-mode');
+                root.style.setProperty('--bg-color', '#FFFFFF');
+                root.style.setProperty('--text-color', '#1F2937');
+                root.style.setProperty('--card-bg', '#F9FAFB');
+                root.style.setProperty('--border-color', '#E5E7EB');
+                root.style.setProperty('--highlight-color', '#94A3B8');
+            }
+
+            // Apply custom colors
+            root.style.setProperty('--primary-color', settings.primary);
+            root.style.setProperty('--secondary-color', settings.secondary);
+            root.style.setProperty('--tertiary-color', settings.tertiary);
+
+            // Applying font size to the HTML root element (document.documentElement)
+            root.style.fontSize = `${settings.fontSize}px`;
+
+            // Update floating button background
+            MENU_TOGGLE_BTN.style.backgroundColor = settings.primary;
+        }
+
+        /** Updates and saves settings based on current input values. */
+        function updateSettingsFromInputs() {
+            const settings = {
+                isDark: !THEME_TOGGLE.checked,
+                primary: PRIMARY_COLOR_INPUT.value,
+                secondary: SECONDARY_COLOR_INPUT.value,
+                tertiary: TERTIARY_COLOR_INPUT.value,
+                fontSize: parseInt(FONT_SIZE_SLIDER.value),
+            };
+            applySettings(settings);
+            saveSettings(settings);
+        }
+
+        /** Resets all settings to the original default and applies them. */
+        function setDefaultSettings() {
+            // Set input values back to defaults
+            THEME_TOGGLE.checked = !DEFAULT_SETTINGS.isDark;
+            PRIMARY_COLOR_INPUT.value = DEFAULT_SETTINGS.primary;
+            SECONDARY_COLOR_INPUT.value = DEFAULT_SETTINGS.secondary;
+            TERTIARY_COLOR_INPUT.value = DEFAULT_SETTINGS.tertiary;
+            FONT_SIZE_SLIDER.value = DEFAULT_SETTINGS.fontSize; // Reset font size to 16
+
+            // Apply and save the default settings
+            applySettings(DEFAULT_SETTINGS);
+            saveSettings(DEFAULT_SETTINGS);
+            
+            showTemporaryMessage('Theme settings reset to default dark mode and font size!');
+            togglePanel(); // Close panel after reset
+        }
+        
+        // --- Core Functions: Notes ---
+        
+        /** Loads notes from localStorage and applies them (Module 3 specific key). */
+        function loadNotes() {
+            const notes = localStorage.getItem(NOTES_STORAGE_KEY);
+            if (NOTES_BOX && notes) {
+                NOTES_BOX.value = notes;
+            }
+        }
+
+        /** Saves current notes to localStorage (Module 3 specific key). */
+        function saveNotes() {
+            if (NOTES_BOX) {
+                localStorage.setItem(NOTES_STORAGE_KEY, NOTES_BOX.value);
+            }
+        }
+
+        // --- Core Functions: Progress ---
+
+        /** Loads progress state from localStorage and updates UI (Module 3 specific key). */
+        function loadProgress() {
+            const savedProgress = localStorage.getItem(PROGRESS_STORAGE_KEY);
+            if (savedProgress) {
+                sectionStatus = JSON.parse(savedProgress);
+            } else {
+                // Initialize all to false if nothing is saved
+                SECTION_IDS.forEach(id => sectionStatus[id] = false);
+            }
+            
+            // Update checkboxes on screen
+            SECTION_IDS.forEach(id => {
+                // Checkbox ID format is 'check-1', 'check-2', etc.
+                const index = id.split('-')[1];
+                const checkId = `check-${index}`;
+                const checkbox = document.getElementById(checkId);
+                if (checkbox) {
+                    // Use boolean coercion (!!sectionStatus[id]) to set checked state
+                    checkbox.checked = !!sectionStatus[id];
+                }
+            });
+        }
+        
+        /** Updates the progress bar percentage display. */
+        function updateProgressBar() {
+            const totalSections = SECTION_IDS.length;
+            const completedSections = SECTION_IDS.filter(id => sectionStatus[id]).length;
+            const progressPercentage = (completedSections / totalSections) * 100;
+            const fixedPercentage = progressPercentage.toFixed(0);
+            
+            if (PROGRESS_BAR && PROGRESS_PERCENTAGE_SPAN) {
+                PROGRESS_BAR.style.width = `${fixedPercentage}%`;
+                PROGRESS_PERCENTAGE_SPAN.textContent = `${fixedPercentage}%`;
+            }
+        }
+
+        /** Handles the toggle change event for a section. */
+        function toggleSectionRead(checkbox) {
+            const sectionId = checkbox.getAttribute('data-section-id');
+            const isChecked = checkbox.checked;
+            
+            sectionStatus[sectionId] = isChecked;
+            localStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify(sectionStatus));
+            updateProgressBar();
+            
+            const message = isChecked ? `Module 3: Section marked as complete! (${sectionId})` : `Module 3: Section marked as incomplete. (${sectionId})`;
+            showTemporaryMessage(message);
+        }
+        
+        // Expose to global scope for HTML inline calls (onclick/onchange)
+        window.setDefaultSettings = setDefaultSettings;
+        window.togglePanel = togglePanel;
+        window.toggleSectionRead = toggleSectionRead;
+
+
+        // --- Utility Functions ---
+
+        /** Toggles the customization panel visibility. */
+        function togglePanel() {
+            const isOpen = PANEL.classList.toggle('open');
+            MENU_ICON.classList.toggle('hidden', isOpen);
+            CLOSE_ICON.classList.toggle('hidden', !isOpen);
+        }
+        
+        // Custom Message Box function (replaces alert())
+        function showTemporaryMessage(message) {
+            let msgBox = document.getElementById('tempMessageBox');
+            if (!msgBox) {
+                msgBox = document.createElement('div');
+                msgBox.id = 'tempMessageBox';
+                // Adjusting positioning for mobile view
+                msgBox.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white p-3 rounded-lg shadow-xl z-[2000] opacity-0 transition-opacity duration-300 pointer-events-none text-sm sm:text-base';
+                document.body.appendChild(msgBox);
+            }
+            msgBox.textContent = message;
+            msgBox.style.opacity = '1';
+
+            setTimeout(() => {
+                msgBox.style.opacity = '0';
+            }, 3000);
+        }
+
+        // --- Initialization ---
+
+        window.onload = () => {
+            loadSettings();
+            loadNotes(); // Load saved notes for Module 3
+            loadProgress(); // Load saved progress for Module 3
+            updateProgressBar(); // Update bar based on loaded progress
+
+            // Attach listeners to input fields
+            PRIMARY_COLOR_INPUT.addEventListener('input', updateSettingsFromInputs);
+            SECONDARY_COLOR_INPUT.addEventListener('input', updateSettingsFromInputs);
+            TERTIARY_COLOR_INPUT.addEventListener('input', updateSettingsFromInputs);
+            FONT_SIZE_SLIDER.addEventListener('input', updateSettingsFromInputs); 
+            THEME_TOGGLE.addEventListener('change', updateSettingsFromInputs);
+            
+            // Listener for notes box saving
+            if (NOTES_BOX) {
+                NOTES_BOX.addEventListener('input', saveNotes);
+            }
+        };
+    </script>
+</body>
+</html>
+
