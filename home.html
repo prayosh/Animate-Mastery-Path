@@ -6,7 +6,7 @@
     <title>Adobe Animate Syllabus Tracker</title>
     <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
+
     <!-- Core JavaScript Logic (Uses localStorage for Persistence) -->
     <script>
         
@@ -68,13 +68,13 @@
          */
         function toggleCompletionStyle(card, isCompleted) {
             if (isCompleted) {
-                // Apply greenish-blue completed style
+                // Apply greenish-blue completed style (Green/Emerald Theme)
                 card.classList.add('module-completed');
-                card.classList.remove('bg-gray-900', 'border-gray-800', 'hover:shadow-primary-accent/40');
+                card.classList.remove('bg-gray-900', 'border-gray-800'); // Removed hover class here as it's defined in CSS now
             } else {
                 // Revert to original dark style
                 card.classList.remove('module-completed');
-                card.classList.add('bg-gray-900', 'border-gray-800', 'hover:shadow-primary-accent/40');
+                card.classList.add('bg-gray-900', 'border-gray-800');
             }
         }
 
@@ -268,16 +268,54 @@
             padding-bottom: 1.5rem; 
             /* Initial inactive style */
             background-color: #111827; /* Tailwind gray-900 */
-            border-color: #374151; /* Tailwind gray-700 */
-        }
-        /* Hover state for inactive cards */
-        .module-card:not(.module-completed):hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);
-            border-color: #6366F1;
+            border-color: #374151; /* Tailwind gray-700; */
         }
         
-        /* --- Completion Theme (Greenish-Blue) --- */
+        /* Default hover behavior removed, now handled by difficulty classes below */
+        .module-card:not(.module-completed):hover {
+            transform: translateY(-5px);
+        }
+
+        /* ------------------------------------------------------------- */
+        /* --- DIFFICULTY THEMES: Icon Color, Title Color, Hover Glow --- */
+        /* ------------------------------------------------------------- */
+
+        .module-card:not(.module-completed) .module-icon,
+        .module-card:not(.module-completed) h2 {
+            transition: color 0.3s ease; 
+        }
+
+        /* BEGINNER (Greenish Tone) */
+        .module-beginner .module-icon,
+        .module-beginner h2 {
+            color: #4ADE80; /* Green 400 */
+        }
+        .module-beginner:not(.module-completed):hover {
+            box-shadow: 0 10px 30px rgba(74, 222, 128, 0.4); /* Green glow on hover */
+            border-color: #4ADE80;
+        }
+
+        /* INTERMEDIATE (Yellowish/Amber Tone) */
+        .module-intermediate .module-icon,
+        .module-intermediate h2 {
+            color: #FACC15; /* Amber 400 */
+        }
+        .module-intermediate:not(.module-completed):hover {
+            box-shadow: 0 10px 30px rgba(250, 204, 21, 0.4); /* Amber glow on hover */
+            border-color: #FACC15;
+        }
+
+        /* ADVANCED (Reddish/Rose Tone) */
+        .module-advanced .module-icon,
+        .module-advanced h2 {
+            color: #F87171; /* Red 400 / Rose 400 */
+        }
+        .module-advanced:not(.module-completed):hover {
+            box-shadow: 0 10px 30px rgba(248, 113, 113, 0.4); /* Red glow on hover */
+            border-color: #F87171;
+        }
+        
+        /* --- Completion Theme (Greenish-Blue, overrides difficulty colors) --- */
         .module-completed {
             /* Completion Background */
             background: linear-gradient(135deg, #10B981, #065F46); /* Emerald/Dark Emerald Gradient */
@@ -285,44 +323,36 @@
             box-shadow: 0 0 20px rgba(52, 211, 153, 0.7); /* Green glow */
         }
 
-        /* FIX: High contrast for text and icon inside completed modules */
+        /* High contrast for text and icon inside completed modules */
         .module-completed .module-icon, 
         .module-completed h2 {
-            /* Use a light gray/white for visibility against the dark green background */
-            color: #F3F4F6 !important; 
+            color: #F3F4F6 !important; /* White for completed state */
         }
 
-        /* * FIX: Custom dark style for the checkbox box 
-         * We use appearance: none to override the native white box style.
-         */
+        /* Custom dark style for the checkbox box */
         .module-checkbox {
-            /* 1. Reset native browser appearance */
             appearance: none;
             -webkit-appearance: none; 
-            
             width: 1.5rem;
             height: 1.5rem;
             cursor: pointer;
-            
-            /* 2. The desired dark color for the unchecked box */
-            background-color: #1F2937; /* Dark Gray background (gray-800 equivalent) */
-            border: 2px solid #4B5563; /* Subtle border (gray-600 equivalent) */
+            background-color: #1F2937; /* Dark Gray background */
+            border: 2px solid #4B5563; /* Subtle border */
             border-radius: 0.25rem;
             transition: background-color 0.2s, border-color 0.2s;
         }
 
-        /* 3. Style for the CHECKED state: changes background to green and adds a white SVG checkmark */
+        /* Style for the CHECKED state: changes background to green and adds a white SVG checkmark */
         .module-checkbox:checked {
             background-color: #34D399; /* Green background when checked */
             border-color: #34D399;
-            /* White checkmark using a high-contrast SVG data URI */
             background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23FFFFFF' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10l3 3l6-6'/%3e%3c/svg%3e");
             background-size: 100% 100%;
             background-position: center;
             background-repeat: no-repeat;
         }
 
-
+        /* Difficulty tag styles remain unchanged as they were already color-coded */
         .difficulty-tag {
             font-size: 0.75rem;
             padding: 0.2rem 0.6rem;
@@ -372,7 +402,7 @@
             <div class="mb-8 flex flex-col items-center">
                 <div id="profile-picture-container" class="relative w-32 h-32 rounded-full shadow-xl">
                     <img id="profile-image" 
-                         src="pratikimg.jpg" 
+                         src="https://placehold.co/128x128/6366F1/FFFFFF?text=PFP" 
                          alt="User Profile Picture" 
                          class="w-full h-full object-cover rounded-full transition duration-300" 
                          onerror="this.onerror=null; this.src='https://placehold.co/128x128/6366F1/FFFFFF?text=PFP';"
@@ -402,121 +432,122 @@
         <main>
             <div id="module-list" class="grid gap-6 md:grid-cols-2 lg:grid-cols-2">
 
-                <!-- Module 1 -->
-                <a href="https://prayosh.github.io/Animate-Mastery-Path/module-1.html" class="module-card rounded-xl p-6 shadow-xl block" data-module-id="module1">
+                <!-- Module 1 - BEGINNER (Green) -->
+                <a href="https://prayosh.github.io/Animate-Mastery-Path/module-1.html" target="_blank" class="module-card module-beginner rounded-xl p-6 shadow-xl block" data-module-id="module1">
                     <div class="flex items-start justify-between mb-4">
                         <div class="flex items-center">
-                            <!-- Icon -->
-                            <svg class="w-12 h-12 mr-4 flex-shrink-0 text-primary-accent module-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37a1.724 1.724 0 002.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                            <h2 class="text-2xl font-semibold text-primary-accent">1. Setup and Interface Mastery</h2>
+                            <!-- Icon (removed text-primary-accent) -->
+                            <svg class="w-12 h-12 mr-4 flex-shrink-0 module-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37a1.724 1.724 0 002.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                            <!-- Title (removed text-primary-accent) -->
+                            <h2 class="text-2xl font-semibold">1. Setup and Interface Mastery</h2>
                         </div>
                         <input type="checkbox" class="module-checkbox mt-2" id="module-checkbox-1">
                     </div>
                     <span class="difficulty-tag beginner">Beginner</span>
                 </a>
 
-                <!-- Module 2 -->
-                <a href="https://prayosh.github.io/Animate-Mastery-Path/module-2.html" class="module-card rounded-xl p-6 shadow-xl block" data-module-id="module2">
+                <!-- Module 2 - BEGINNER (Green) -->
+                <a href="https://prayosh.github.io/Animate-Mastery-Path/module-2.html" target="_blank" class="module-card module-beginner rounded-xl p-6 shadow-xl block" data-module-id="module2">
                     <div class="flex items-start justify-between mb-4">
                         <div class="flex items-center">
-                            <svg class="w-12 h-12 mr-4 flex-shrink-0 text-primary-accent module-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-                            <h2 class="text-2xl font-semibold text-primary-accent">2. Basic Asset Creation and Import</h2>
+                            <svg class="w-12 h-12 mr-4 flex-shrink-0 module-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                            <h2 class="text-2xl font-semibold">2. Basic Asset Creation and Import</h2>
                         </div>
                         <input type="checkbox" class="module-checkbox mt-2" id="module-checkbox-2">
                     </div>
                     <span class="difficulty-tag beginner">Beginner</span>
                 </a>
 
-                <!-- Module 3 -->
-                <a href="https://prayosh.github.io/Animate-Mastery-Path/module-3.html" class="module-card rounded-xl p-6 shadow-xl block" data-module-id="module3">
+                <!-- Module 3 - BEGINNER (Green) -->
+                <a href="https://prayosh.github.io/Animate-Mastery-Path/module-3.html" target="_blank" class="module-card module-beginner rounded-xl p-6 shadow-xl block" data-module-id="module3">
                     <div class="flex items-start justify-between mb-4">
                         <div class="flex items-center">
-                            <svg class="w-12 h-12 mr-4 flex-shrink-0 text-primary-accent module-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4M3 12h4M3 16h4M17 8h4M17 12h4M17 16h4M21 4a2 2 0 00-2-2H5a2 2 0 00-2 2v16a2 2 0 002 2h14a2 2 0 002-2V4z"></path></svg>
-                            <h2 class="text-2xl font-semibold text-primary-accent">3. Timeline and Basic Animation</h2>
+                            <svg class="w-12 h-12 mr-4 flex-shrink-0 module-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4M3 12h4M3 16h4M17 8h4M17 12h4M17 16h4M21 4a2 2 0 00-2-2H5a2 2 0 00-2 2v16a2 2 0 002 2h14a2 2 0 002-2V4z"></path></svg>
+                            <h2 class="text-2xl font-semibold">3. Timeline and Basic Animation</h2>
                         </div>
                         <input type="checkbox" class="module-checkbox mt-2" id="module-checkbox-3">
                     </div>
                     <span class="difficulty-tag beginner">Beginner</span>
                 </a>
 
-                <!-- Module 4 -->
-                <a href="https://prayosh.github.io/Animate-Mastery-Path/module-4.html" class="module-card rounded-xl p-6 shadow-xl block" data-module-id="module4">
+                <!-- Module 4 - INTERMEDIATE (Yellow) -->
+                <a href="https://prayosh.github.io/Animate-Mastery-Path/module-4.html" target="_blank" class="module-card module-intermediate rounded-xl p-6 shadow-xl block" data-module-id="module4">
                     <div class="flex items-start justify-between mb-4">
                         <div class="flex items-center">
-                            <svg class="w-12 h-12 mr-4 flex-shrink-0 text-primary-accent module-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M10 14v5a2 2 0 002 2h0a2 2 0 002-2v-5m-4 0h4"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M10 14v5a2 2 0 002 2h0a2 2 0 002-2v-5m-4 0h4"></path></svg>
-                            <h2 class="text-2xl font-semibold text-primary-accent">4. Character Design and Rigging</h2>
+                            <svg class="w-12 h-12 mr-4 flex-shrink-0 module-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M10 14v5a2 2 0 002 2h0a2 2 0 002-2v-5m-4 0h4"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M10 14v5a2 2 0 002 2h0a2 2 0 002-2v-5m-4 0h4"></path></svg>
+                            <h2 class="text-2xl font-semibold">4. Character Design and Rigging</h2>
                         </div>
                         <input type="checkbox" class="module-checkbox mt-2" id="module-checkbox-4">
                     </div>
                     <span class="difficulty-tag intermediate">Intermediate</span>
                 </a>
 
-                <!-- Module 5 -->
-                <a href="https://prayosh.github.io/Animate-Mastery-Path/module-5.html" class="module-card rounded-xl p-6 shadow-xl block" data-module-id="module5">
+                <!-- Module 5 - INTERMEDIATE (Yellow) -->
+                <a href="https://prayosh.github.io/Animate-Mastery-Path/module-5.html" target="_blank" class="module-card module-intermediate rounded-xl p-6 shadow-xl block" data-module-id="module5">
                     <div class="flex items-start justify-between mb-4">
                         <div class="flex items-center">
-                            <svg class="w-12 h-12 mr-4 flex-shrink-0 text-primary-accent module-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14V9.5a2.5 2.5 0 00-2.5-2.5H12"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 16l-3-3m0 0l-3 3m3-3v8m0 0h8"></path><circle cx="9" cy="4.5" r="1.5"></circle></svg>
-                            <h2 class="text-2xl font-semibold text-primary-accent">5. Advanced Character Animation</h2>
+                            <svg class="w-12 h-12 mr-4 flex-shrink-0 module-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14V9.5a2.5 2.5 0 00-2.5-2.5H12"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 16l-3-3m0 0l-3 3m3-3v8m0 0h8"></path><circle cx="9" cy="4.5" r="1.5"></circle></svg>
+                            <h2 class="text-2xl font-semibold">5. Advanced Character Animation</h2>
                         </div>
                         <input type="checkbox" class="module-checkbox mt-2" id="module-checkbox-5">
                     </div>
                     <span class="difficulty-tag intermediate">Intermediate</span>
                 </a>
 
-                <!-- Module 6 -->
-                <a href="https://prayosh.github.io/Animate-Mastery-Path/module-6.html" class="module-card rounded-xl p-6 shadow-xl block" data-module-id="module6">
+                <!-- Module 6 - INTERMEDIATE (Yellow) -->
+                <a href="https://prayosh.github.io/Animate-Mastery-Path/module-6.html" target="_blank" class="module-card module-intermediate rounded-xl p-6 shadow-xl block" data-module-id="module6">
                     <div class="flex items-start justify-between mb-4">
                         <div class="flex items-center">
-                            <svg class="w-12 h-12 mr-4 flex-shrink-0 text-primary-accent module-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L15 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-2-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                            <h2 class="text-2xl font-semibold text-primary-accent">6. Backgrounds, Composition, and Scene Building</h2>
+                            <svg class="w-12 h-12 mr-4 flex-shrink-0 module-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L15 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-2-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                            <h2 class="text-2xl font-semibold">6. Backgrounds, Composition, and Scene Building</h2>
                         </div>
                         <input type="checkbox" class="module-checkbox mt-2" id="module-checkbox-6">
                     </div>
                     <span class="difficulty-tag intermediate">Intermediate</span>
                 </a>
 
-                <!-- Module 7 -->
-                <a href="https://prayosh.github.io/Animate-Mastery-Path/module-7.html" class="module-card rounded-xl p-6 shadow-xl block" data-module-id="module7">
+                <!-- Module 7 - ADVANCED (Red) -->
+                <a href="https://prayosh.github.io/Animate-Mastery-Path/module-7.html" target="_blank" class="module-card module-advanced rounded-xl p-6 shadow-xl block" data-module-id="module7">
                     <div class="flex items-start justify-between mb-4">
                         <div class="flex items-center">
-                            <svg class="w-12 h-12 mr-4 flex-shrink-0 text-primary-accent module-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101M16.929 17.071l.68-1.442v.358m0 0l-4-4a4 4 0 01-5.656 0l-4-4"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6.172 13.828a4 4 0 005.656 0l4-4a4 4 0 10-5.656-5.656l-1.102 1.101m-.68 1.944l4 4a4 4 0 105.656-5.656l-4-4"></path></svg>
-                            <h2 class="text-2xl font-semibold text-primary-accent">7. Combining Scenes and Multi-Scene Workflows</h2>
+                            <svg class="w-12 h-12 mr-4 flex-shrink-0 module-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101M16.929 17.071l.68-1.442v.358m0 0l-4-4a4 4 0 01-5.656 0l-4-4"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6.172 13.828a4 4 0 005.656 0l4-4a4 4 0 10-5.656-5.656l-1.102 1.101m-.68 1.944l4 4a4 4 0 105.656-5.656l-4-4"></path></svg>
+                            <h2 class="text-2xl font-semibold">7. Combining Scenes and Multi-Scene Workflows</h2>
                         </div>
                         <input type="checkbox" class="module-checkbox mt-2" id="module-checkbox-7">
                     </div>
                     <span class="difficulty-tag advanced">Advanced</span>
                 </a>
 
-                <!-- Module 8 -->
-                <a href="https://prayosh.github.io/Animate-Mastery-Path/module-8.html" class="module-card rounded-xl p-6 shadow-xl block" data-module-id="module8">
+                <!-- Module 8 - ADVANCED (Red) -->
+                <a href="https://prayosh.github.io/Animate-Mastery-Path/module-8.html" target="_blank" class="module-card module-advanced rounded-xl p-6 shadow-xl block" data-module-id="module8">
                     <div class="flex items-start justify-between mb-4">
                         <div class="flex items-center">
-                            <svg class="w-12 h-12 mr-4 flex-shrink-0 text-primary-accent module-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4M4 19h4m5-15v2m0 6v2m0 6v2M12 4v16M19 3v4M17 5h4m-3 14v-2m-2-2h4"></path></svg>
-                            <h2 class="text-2xl font-semibold text-primary-accent">8. Enhancing Animation Quality and Effects</h2>
+                            <svg class="w-12 h-12 mr-4 flex-shrink-0 module-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4M4 19h4m5-15v2m0 6v2m0 6v2M12 4v16M19 3v4M17 5h4m-3 14v-2m-2-2h4"></path></svg>
+                            <h2 class="text-2xl font-semibold">8. Enhancing Animation Quality and Effects</h2>
                         </div>
                         <input type="checkbox" class="module-checkbox mt-2" id="module-checkbox-8">
                     </div>
                     <span class="difficulty-tag advanced">Advanced</span>
                 </a>
 
-                <!-- Module 9 -->
-                <a href="https://prayosh.github.io/Animate-Mastery-Path/module-9.html" class="module-card rounded-xl p-6 shadow-xl block" data-module-id="module9">
+                <!-- Module 9 - ADVANCED (Red) -->
+                <a href="https://prayosh.github.io/Animate-Mastery-Path/module-9.html" target="_blank" class="module-card module-advanced rounded-xl p-6 shadow-xl block" data-module-id="module9">
                     <div class="flex items-start justify-between mb-4">
                         <div class="flex items-center">
-                            <svg class="w-12 h-12 mr-4 flex-shrink-0 text-primary-accent module-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                            <h2 class="text-2xl font-semibold text-primary-accent">9. Optimization and Fast Production Workflows</h2>
+                            <svg class="w-12 h-12 mr-4 flex-shrink-0 module-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                            <h2 class="text-2xl font-semibold">9. Optimization and Fast Production Workflows</h2>
                         </div>
                         <input type="checkbox" class="module-checkbox mt-2" id="module-checkbox-9">
                     </div>
                     <span class="difficulty-tag advanced">Advanced</span>
                 </a>
 
-                <!-- Module 10 -->
-                <a href="https://prayosh.github.io/Animate-Mastery-Path/module-10.html" class="module-card rounded-xl p-6 shadow-xl block" data-module-id="module10">
+                <!-- Module 10 - ADVANCED (Red) -->
+                <a href="https://prayosh.github.io/Animate-Mastery-Path/module-10.html" target="_blank" class="module-card module-advanced rounded-xl p-6 shadow-xl block" data-module-id="module10">
                     <div class="flex items-start justify-between mb-4">
                         <div class="flex items-center">
-                            <svg class="w-12 h-12 mr-4 flex-shrink-0 text-primary-accent module-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2z"></path></svg>
-                            <h2 class="text-2xl font-semibold text-primary-accent">10. Capstone Projects and Professional Application</h2>
+                            <svg class="w-12 h-12 mr-4 flex-shrink-0 module-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2z"></path></svg>
+                            <h2 class="text-2xl font-semibold">10. Capstone Projects and Professional Application</h2>
                         </div>
                         <input type="checkbox" class="module-checkbox mt-2" id="module-checkbox-10">
                     </div>
@@ -543,4 +574,3 @@
     </div>
 </body>
 </html>
-
