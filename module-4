@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 4: Character Design and Rigging</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Configure Tailwind -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Bebas Neue', 'sans-serif'],
+                    },
+                },
+            }
+        }
+    </script>
+    <style>
+        /* --- 1. CSS Variables for Customization --- */
+        :root {
+            /* Default Dark Mode Colors */
+            --bg-color: #0A0A1F;
+            --text-color: #E5E7EB;
+            --card-bg: #111827;
+            --border-color: #374151;
+            --primary-color: #6366F1; /* Default Indigo (Main Headings) */
+            --secondary-color: #34D399; /* Default Emerald (Exercise Headers/Accents) */
+            --tertiary-color: #A5B4FC; /* Default Light Purple (Bullet Strong Text) */
+            --highlight-color: #FBBF24; /* Yellow for specific elements like keyboard shortcuts */
+        }
+
+        /* Light Mode Overrides */
+        .light-mode {
+            --bg-color: #FFFFFF;
+            --text-color: #1F2937;
+            --card-bg: #F9FAFB;
+            --border-color: #E5E7EB;
+            --highlight-color: #94A3B8;
+        }
+
+        /* --- 2. Dynamic Styling using Variables --- */
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+            min-height: 100vh;
+        }
+
+        .header-title {
+             /* Uses CSS variables for the gradient */
+            background-image: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        h2 {
+            color: var(--primary-color); /* Uses Primary Color */
+        }
+
+        /* Exercise headers and quiz headers use secondary color */
+        #section-5 h2, #section-6 h2 {
+            color: var(--secondary-color);
+        }
+
+        /* Bullet point strong text uses the new tertiary color */
+        .strong-accent {
+            color: var(--tertiary-color);
+        }
+
+        .border-primary {
+            border-color: var(--primary-color) !important;
+        }
+        
+        .bg-card {
+            background-color: var(--card-bg);
+        }
+
+        .syllabus-list li::marker {
+            color: var(--primary-color); /* Main bullet marker remains Primary */
+        }
+        
+        /* Custom list style for deeper indentation */
+        .syllabus-list li {
+            margin-bottom: 0.5rem;
+        }
+        .syllabus-list ul {
+            padding-left: 1.5em; /* Use em to scale with font size */
+            margin-top: 0.5em;
+            list-style-type: disc;
+        }
+        .syllabus-list ul ul {
+            list-style-type: circle;
+        }
+        .syllabus-list ul ul ul {
+            list-style-type: square;
+        }
+
+        /* Styling for the hands-on sections */
+        .hands-on-box {
+            border: 2px solid;
+            border-image: linear-gradient(to right, var(--primary-color), var(--secondary-color)) 1;
+            box-shadow: 0 5px 20px rgba(99, 102, 241, 0.2);
+            position: relative;
+            overflow: hidden;
+            background-color: var(--card-bg);
+            border-radius: 0.5rem;
+        }
+
+        .keyboard-shortcut {
+            color: var(--highlight-color);
+            font-weight: 600;
+        }
+
+        /* --- 3. Customization Panel Styles --- */
+        #customizationPanel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 80vw;
+            max-width: 300px;
+            height: 100%;
+            z-index: 1000;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease-in-out;
+            box-shadow: 4px 0 15px rgba(0, 0, 0, 0.5);
+            padding: 1.5rem;
+            background-color: var(--card-bg);
+            border-right: 1px solid var(--border-color);
+            color: var(--text-color);
+            overflow-y: auto;
+        }
+        #customizationPanel.open {
+            transform: translateX(0);
+        }
+
+        /* Button floating in the bottom right */
+        #menuToggleBtn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1001;
+            width: 56px;
+            height: 56px;
+            background-color: var(--primary-color);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+            transition: background-color 0.3s;
+        }
+
+        /* Slider Toggle CSS (for aesthetics) - Used for Theme only */
+        .switch .slider {
+            background-color: var(--border-color);
+        }
+        .switch input:checked + .slider {
+            background-color: var(--primary-color);
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+        input:checked + .slider:before {
+            transform: translateX(16px);
+        }
+        
+        /* Style the range input track for the font slider */
+        #fontSizeSlider::-webkit-slider-runnable-track {
+            height: 8px;
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+        #fontSizeSlider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            background: var(--primary-color);
+            cursor: pointer;
+            border-radius: 50%;
+            margin-top: -5px; 
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+        }
+        
+        /* Notes Box Styling */
+        #notesBox {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        /* --- 4. Checkbox Styling (Mark as Read) --- */
+        .section-checkbox {
+            /* Force custom styling to override native white background */
+            -webkit-appearance: none; 
+            appearance: none;
+            
+            /* Sizing and basic style */
+            height: 24px;
+            width: 24px;
+            min-width: 24px;
+            min-height: 24px;
+            
+            /* Apply dark theme colors for unchecked state */
+            border: 2px solid var(--border-color);
+            background-color: var(--card-bg); 
+            border-radius: 6px;
+            margin: 0;
+            flex-shrink: 0; 
+            cursor: pointer;
+            
+            /* Positioning for custom checkmark */
+            position: relative; 
+            display: inline-block;
+            transition: background-color 0.1s ease-in-out;
+        }
+
+        /* Checked state: use secondary color for background */
+        .section-checkbox:checked {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+        
+        /* Custom checkmark using ::after on checked state */
+        .section-checkbox:checked::after {
+            content: '';
+            position: absolute;
+            top: 4px;
+            left: 8px;
+            width: 6px;
+            height: 12px;
+            /* White checkmark for high contrast on secondary color background */
+            border: solid white;
+            border-width: 0 3px 3px 0;
+            transform: rotate(45deg);
+        }
+        
+        /* Ensure the h2 takes available space in the flex container */
+        .section-header-flex h2 {
+            flex-shrink: 1;
+            margin-right: 1rem;
+        }
+        
+    </style>
+</head>
+<body>
+
+    <!-- Customization Panel (Slides out from left) -->
+    <div id="customizationPanel">
+
+        <!-- Syllabus Overview Link -->
+        <a href="https://prayosh.github.io/Animate-Mastery-Path/home.html" 
+           class="flex items-center justify-center w-full p-3 mb-6 font-semibold rounded-lg transition duration-200 shadow-lg hover:shadow-xl" 
+           style="background-color: var(--primary-color); color: var(--card-bg);">
+            <!-- Syllabus Icon (Document with Lines) -->
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            Syllabus Overview
+        </a>
+        <!-- END Syllabus Overview Link -->
+
+        <!-- Theme Settings Heading -->
+        <h2 class="text-2xl font-bold mb-4 border-b pb-2" style="color: var(--primary-color); border-bottom-color: var(--border-color);">Theme Settings</h2>
+
+        <!-- Theme Toggle -->
+        <div class="mb-6">
+            <label class="block text-sm font-medium mb-2" style="color: var(--secondary-color);">Theme Mode</label>
+            <div class="flex items-center space-x-4 p-2 rounded-lg" style="background-color: var(--border-color);">
+                <span class="text-sm">Dark</span>
+                <label class="switch relative inline-block w-10 h-6">
+                    <input type="checkbox" id="themeToggle" class="opacity-0 w-0 h-0">
+                    <span class="slider absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full transition-all duration-300"></span>
+                </label>
+                <span class="text-sm">Light</span>
+            </div>
+        </div>
+
+        <!-- Primary Color Picker -->
+        <div class="mb-6">
+            <label for="primaryColor" class="block text-sm font-medium mb-2" style="color: var(--secondary-color);">Primary Colour (Main Headings)</label>
+            <input type="color" id="primaryColor" value="#6366F1" class="w-full h-10 border-none rounded-lg p-0 cursor-pointer">
+        </div>
+
+        <!-- Secondary Color Picker -->
+        <div class="mb-6">
+            <label for="secondaryColor" class="block text-sm font-medium mb-2" style="color: var(--secondary-color);">Secondary Colour (Exercise Headers)</label>
+            <input type="color" id="secondaryColor" value="#34D399" class="w-full h-10 border-none rounded-lg p-0 cursor-pointer">
+        </div>
+
+        <!-- Tertiary Color Picker -->
+        <div class="mb-8">
+            <label for="tertiaryColor" class="block text-sm font-medium mb-2" style="color: var(--secondary-color);">Accent Text Colour (List Items)</label>
+            <input type="color" id="tertiaryColor" value="#A5B4FC" class="w-full h-10 border-none rounded-lg p-0 cursor-pointer">
+        </div>
+        
+        <!-- Font Size Slider -->
+        <div class="mb-8">
+            <label for="fontSizeSlider" class="block text-sm font-medium mb-3" style="color: var(--secondary-color);">Text Font Size</label>
+            <input type="range" id="fontSizeSlider" min="14" max="20" step="1" value="16" class="w-full h-2 rounded-lg appearance-none cursor-pointer">
+            <div class="flex justify-between text-xs mt-1 text-gray-400">
+                <span>Small (14px)</span>
+                <span>Large (20px)</span>
+            </div>
+        </div>
+
+
+        <!-- Reset Button -->
+        <button onclick="setDefaultSettings()" class="w-full px-4 py-2 font-semibold rounded-lg transition duration-200" style="background-color: var(--primary-color); color: var(--card-bg);">
+            Reset to Default Theme
+        </button>
+    </div>
+
+    <!-- Menu Toggle Button (Bottom Right) -->
+    <button id="menuToggleBtn" onclick="togglePanel()" class="fixed bottom-5 right-5 w-14 h-14 rounded-full flex items-center justify-center text-white shadow-xl transition-all duration-300 hover:scale-110">
+        <svg id="menuIcon" class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        <svg id="closeIcon" class="w-7 h-7 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+    </button>
+
+    <!-- Main Content Container -->
+    <div class="max-w-4xl mx-auto pb-16">
+
+        <!-- Header -->
+        <header class="text-center py-6 mb-8 border-b" style="border-bottom-color: var(--primary-color);">
+            <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight font-display header-title">
+                Module 4: Character Design and Rigging
+            </h1>
+            <p class="mt-2 text-xl italic font-medium" style="color: var(--secondary-color);">
+                (Beginner to Intermediate)
+            </p>
+        </header>
+
+        <!-- Progress Bar Container -->
+        <div class="mb-8 p-3 rounded-lg bg-card border border-border-color">
+            <div class="flex justify-between items-center mb-1 text-sm font-medium">
+                <span>Progress</span>
+                <span id="progressPercentage">0%</span>
+            </div>
+            <div id="progressBarContainer" class="w-full h-3 rounded-full overflow-hidden" style="background-color: var(--border-color);">
+                <div id="progressBar" class="h-full transition-all duration-500" style="background-color: var(--secondary-color); width: 0%;"></div>
+            </div>
+        </div>
+
+        <!-- Focus Text -->
+        <div class="mb-8 p-4 rounded-lg border border-border-color bg-card">
+            <p class="text-lg leading-relaxed">
+                <strong class="strong-accent">Focus:</strong> Beginner-friendly character building and rigging, transitioning from basic skills to animation-ready characters for cartoons, movies, series, and marketing ads. This module teaches how to create or import simple, modular character designs and rig them efficiently using Adobe Animate’s tools, focusing on tween-based rigging rather than hand-drawn frame-by-frame methods. You'll learn to design characters with separate parts for flexibility, apply basic styling for visual appeal, and use rigging techniques like the **Bone Tool** and **Layer Parenting** for smooth animations. Additional concepts such as symbol hierarchies, basic pose libraries, and troubleshooting are included to ensure a solid foundation. Multiple hands-on exercises reinforce practical skills, preparing you for more complex character animations in later modules.
+            </p>
+            <p class="text-lg leading-relaxed mt-4">
+                <strong class="strong-accent">Learning Objectives:</strong>
+            </p>
+            <ul class="list-disc ml-6 mt-2 space-y-1 text-gray-400">
+                <li>Design simple, modular characters suitable for animation using vectors or imported assets.</li>
+                <li>Master rigging techniques (Bone Tool and Layer Parenting) for efficient character movement.</li>
+                <li>Style characters with basic colors, gradients, and effects for cartoon and ad aesthetics.</li>
+                <li>Adjust and animate poses without errors, ensuring clean workflows.</li>
+                <li>Troubleshoot common rigging issues and adopt time-saving practices for character prep.</li>
+                <li>Build confidence through practical exercises, creating animation-ready characters.</li>
+            </ul>
+        </div>
+
+
+        <!-- Syllabus Content -->
+        <div class="syllabus-list space-y-8">
+            
+            <!-- 1. Character Design for Beginners -->
+            <section id="section-1">
+                <div class="section-header-flex flex justify-between items-center border-b-2 border-primary/40 pb-2">
+                    <h2 class="text-3xl font-bold">Character Design for Beginners:</h2>
+                    <div class="flex items-center space-x-2">
+                        <label for="check-1" class="text-sm font-medium text-gray-400 hidden sm:inline cursor-pointer">Mark Read</label>
+                        <input type="checkbox" id="check-1" data-section-id="section-1" onchange="toggleSectionRead(this)" class="section-checkbox cursor-pointer">
+                    </div>
+                </div>
+                <ul class="ml-4 space-y-3 pt-4">
+                    <li>
+                        <strong class="strong-accent">Modular Parts Design:</strong>
+                        <ul class="list-disc ml-4">
+                            <li><strong>Concept:</strong> Breaking characters into separate parts (e.g., head, torso, arms, legs) for rigging flexibility.</li>
+                            <li><strong>Drawing Simple Shapes:</strong> Using Rectangle (<code class="keyboard-shortcut">R</code>), Oval (<code class="keyboard-shortcut">O</code>), and Pen (<code class="keyboard-shortcut">P</code>) tools to create basic body sections.</li>
+                            <li><strong>Importing Assets:</strong> Importing pre-made vector parts (SVG/AI), ensuring clean lines and compatibility.</li>
+                            <li><strong>Symbol Conversion:</strong> Converting each part to a Graphic or Movie Clip symbol (<code class="keyboard-shortcut">F8</code>, name like “sym\_Head”), organizing in Library folders.</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Composition:</strong>
+                        <ul class="list-disc ml-4">
+                            <li><strong>Layering Parts:</strong> Placing each part on a separate layer (e.g., “Head\_Layer”) for independent control.</li>
+                            <li><strong>Aligning Parts:</strong> Using Align panel (<code class="keyboard-shortcut">Window > Align</code>), snapping to grid/guides for precision.</li>
+                            <li><strong>Grouping for Safety:</strong> Grouping related parts temporarily (<code class="keyboard-shortcut">Ctrl+G</code>) during setup, ungrouping (<code class="keyboard-shortcut">Ctrl+B</code>) for rigging.</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Styling Basics:</strong>
+                        <ul class="list-disc ml-4">
+                            <li><strong>Colors and Fills:</strong> Applying solid fills, linear/radial gradients (via Color panel), adjusting gradient angles with Gradient Transform (<code class="keyboard-shortcut">F</code>).</li>
+                            <li><strong>Stroke Styling:</strong> Adjusting stroke thickness, style, and color for contrast.</li>
+                            <li><strong>Basic Effects:</strong> Applying glow or shadow filters (Properties > Filters) to add depth, keeping effects minimal for performance.</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Additional Concepts:</strong>
+                        <ul class="list-disc ml-4">
+                            <li><strong>Character Proportions:</strong> Basic guidelines (e.g., head 1/8 of body height for cartoon style).</li>
+                            <li><strong>Asset Optimization:</strong> Simplifying shapes (e.g., fewer anchor points) for smoother rigging.</li>
+                            <li><strong>Reusability:</strong> Designing parts for reuse (e.g., same arm for left/right with mirroring via Free Transform).</li>
+                        </ul>
+                    </li>
+                </ul>
+            </section>
+
+            <!-- 2. Rigging Basics -->
+            <section id="section-2">
+                <div class="section-header-flex flex justify-between items-center border-b-2 border-primary/40 pb-2 mt-8">
+                    <h2 class="text-3xl font-bold">Rigging Basics:</h2>
+                    <div class="flex items-center space-x-2">
+                        <label for="check-2" class="text-sm font-medium text-gray-400 hidden sm:inline cursor-pointer">Mark Read</label>
+                        <input type="checkbox" id="check-2" data-section-id="section-2" onchange="toggleSectionRead(this)" class="section-checkbox cursor-pointer">
+                    </div>
+                </div>
+                <ul class="ml-4 space-y-3 pt-4">
+                    <li>
+                        <strong class="strong-accent">Bone Tool:</strong>
+                        <ul class="list-disc ml-4">
+                            <li><strong>Introduction:</strong> Bone Tool (<code class="keyboard-shortcut">M</code>) for Inverse Kinematics (IK), linking symbols to create movable joints.</li>
+                            <li><strong>Step-by-Step Application:</strong> Select symbols, click-drag to add bones from base to tip, setting root bone (e.g., shoulder).</li>
+                            <li><strong>Joint Constraints:</strong> Adjusting rotation limits (Properties > Constraints) to prevent unnatural bends (e.g., elbow rotates 0-150°).</li>
+                            <li><strong>Binding:</strong> Ensuring bones attach to correct symbols, using Bind Tool for mesh adjustments if needed.</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Inverse Kinematics (IK) and Layer Parenting:</strong>
+                        <ul class="list-disc ml-4">
+                            <li><strong>IK Setup:</strong> Creating an armature, dragging to test movement, ensuring hierarchy (e.g., arm bone parented to torso).</li>
+                            <li><strong>Layer Parenting:</strong> Alternative to bones (Window > Properties > Parent dropdown), linking layers (e.g., hand to forearm) for simpler rigging.</li>
+                            <li><strong>Differences:</strong> IK for complex jointed motion (e.g., limbs), parenting for basic hierarchy (e.g., head follows torso).</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Pose Adjustments:</strong>
+                        <ul class="list-disc ml-4">
+                            <li><strong>Posing:</strong> Keyframing poses (<code class="keyboard-shortcut">F6</code>) in armature layer, dragging bones to new positions.</li>
+                            <li><strong>Copy/Paste Poses:</strong> Right-click > Copy Pose, paste to another frame for reuse.</li>
+                            <li><strong>Testing Rig:</strong> Scrubbing Timeline or using Test Movie (<code class="keyboard-shortcut">Ctrl+Enter</code>) to preview motion.</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Additional Concepts:</strong>
+                        <ul class="list-disc ml-4">
+                            <li><strong>Pose Libraries:</strong> Saving poses (<code class="keyboard-shortcut">Window > Pose Library</code>, Add Pose) for quick reuse across animations (e.g., “Idle\_Pose”).</li>
+                            <li><strong>Symbol Nesting for Rigging:</strong> Nesting parts (e.g., eyes inside head symbol) for layered animation control.</li>
+                        </ul>
+                    </li>
+                </ul>
+            </section>
+
+            <!-- 3. Beginner Troubleshooting -->
+            <section id="section-3">
+                <div class="section-header-flex flex justify-between items-center border-b-2 border-primary/40 pb-2 mt-8">
+                    <h2 class="text-3xl font-bold">Beginner Troubleshooting:</h2>
+                    <div class="flex items-center space-x-2">
+                        <label for="check-3" class="text-sm font-medium text-gray-400 hidden sm:inline cursor-pointer">Mark Read</label>
+                        <input type="checkbox" id="check-3" data-section-id="section-3" onchange="toggleSectionRead(this)" class="section-checkbox cursor-pointer">
+                    </div>
+                </div>
+                <ul class="ml-4 space-y-3 pt-4">
+                    <li>
+                        <strong class="strong-accent">Common Errors:</strong>
+                        <ul class="list-disc ml-4">
+                            <li><strong>Bones not connecting:</strong> Symbols not properly aligned (check X/Y overlap), or not converted to symbols (use <code class="keyboard-shortcut">F8</code>).</li>
+                            <li><strong>Unnatural bends:</strong> Missing constraints (set rotation limits), or too many bones (simplify rig).</li>
+                            <li><strong>Pose errors:</strong> Keyframes misaligned (check Timeline for gaps), or parenting conflicts (verify hierarchy).</li>
+                            <li><strong>Layer issues:</strong> Rigging on locked/hidden layer (unlock/show), or wrong layer selected during bone application.</li>
+                            <li><strong>Solutions:</strong> Reconvert assets to symbols, realign parts using guides, simplify rigs (fewer bones), check Properties for constraint settings, use Help (<code class="keyboard-shortcut">F1</code>) for “Bone Tool errors.”</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Additional Concepts:</strong> Saving backup .fla before rigging, checking for broken symbol linkages.
+                    </li>
+                </ul>
+            </section>
+
+            <!-- 4. Efficiency Tips -->
+            <section id="section-4">
+                <div class="section-header-flex flex justify-between items-center border-b-2 border-primary/40 pb-2 mt-8">
+                    <h2 class="text-3xl font-bold">Efficiency Tips:</h2>
+                    <div class="flex items-center space-x-2">
+                        <label for="check-4" class="text-sm font-medium text-gray-400 hidden sm:inline cursor-pointer">Mark Read</label>
+                        <input type="checkbox" id="check-4" data-section-id="section-4" onchange="toggleSectionRead(this)" class="section-checkbox cursor-pointer">
+                    </div>
+                </div>
+                <ul class="ml-4 space-y-3 pt-4">
+                    <li>
+                        <strong class="strong-accent">Use Templates:</strong> Use Adobe-provided rig templates (File > New > Templates > Animation) to skip manual bone setup.
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Pre-align Parts:</strong> Pre-align parts on stage before rigging to avoid repositioning.
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Name Consistently:</strong> Name symbols/layers consistently (e.g., “sym\_Arm\_L”, “layer\_Arm\_L”) for quick identification.
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Reuse Rigs:</strong> Duplicate rigged characters (<code class="keyboard-shortcut">Ctrl+D</code> in Library) for variations (e.g., same rig, different colors).
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Keyboard Shortcuts:</strong> <code class="keyboard-shortcut">M</code> for Bone Tool, <code class="keyboard-shortcut">Q</code> for Free Transform, <code class="keyboard-shortcut">F6</code> for keyframes to speed up rigging.
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Batch-convert:</strong> Batch-convert multiple parts to symbols (select all, <code class="keyboard-shortcut">F8</code>) to save time.
+                    </li>
+                </ul>
+            </section>
+
+            <!-- 5. Hands-On Exercises -->
+            <section id="section-5" class="mt-12">
+                <div class="section-header-flex flex justify-between items-center border-b-2 pb-2 mb-6" style="border-bottom-color: var(--secondary-color);">
+                    <h2 class="text-3xl font-bold" style="color: var(--secondary-color);">Hands-On Exercises (Practice for Reinforcement):</h2>
+                    <div class="flex items-center space-x-2">
+                        <label for="check-5" class="text-sm font-medium text-gray-400 hidden sm:inline cursor-pointer">Mark Read</label>
+                        <input type="checkbox" id="check-5" data-section-id="section-5" onchange="toggleSectionRead(this)" class="section-checkbox cursor-pointer">
+                    </div>
+                </div>
+                <div class="space-y-6">
+                    <div class="hands-on-box p-6">
+                        <h3 class="text-xl font-semibold mb-2" style="color: var(--secondary-color);">Exercise 1: Simple Character Design (Time: 20-25 minutes)</h3>
+                        <ul class="list-disc ml-4 text-gray-400 space-y-1">
+                            <li>Create a new document (1280x720, 24 fps), draw a stick-figure character using shapes, convert each part to a Graphic symbol (e.g., “sym\_Head”) with <code class="keyboard-shortcut">F8</code>, place on separate layers, align, apply a blue gradient fill to torso and red stroke to head. Save as “StickFigure.fla”.</li>
+                        </ul>
+                    </div>
+                    <div class="hands-on-box p-6">
+                        <h3 class="text-xl font-semibold mb-2" style="color: var(--secondary-color);">Exercise 2: Importing and Styling (Time: 20-25 minutes)</h3>
+                        <ul class="list-disc ml-4 text-gray-400 space-y-1">
+                            <li>Download a free vector character, import SVG to Library, drag parts (head, body, limbs) to separate layers, apply a glow filter to head and gradient to body, align parts for natural look, save as “ImportedCharacter.fla”.</li>
+                        </ul>
+                    </div>
+                    <div class="hands-on-box p-6">
+                        <h3 class="text-xl font-semibold mb-2" style="color: var(--secondary-color);">Exercise 3: Bone Tool Rigging (Time: 20-25 minutes)</h3>
+                        <ul class="list-disc ml-4 text-gray-400 space-y-1">
+                            <li>Using the stick-figure from Exercise 1, apply <code class="keyboard-shortcut">Bone Tool</code> (<code class="keyboard-shortcut">M</code>) to rig one arm (shoulder > elbow > hand), set rotation constraints (e.g., elbow 0-150°), test by dragging bones, keyframe two poses (arm up/down) over 12 frames, preview with onion skinning. Save as “BoneRig.fla”.</li>
+                        </ul>
+                    </div>
+                    <div class="hands-on-box p-6">
+                        <h3 class="text-xl font-semibold mb-2" style="color: var(--secondary-color);">Exercise 4: Layer Parenting Rigging (Time: 15-20 minutes)</h3>
+                        <ul class="list-disc ml-4 text-gray-400 space-y-1">
+                            <li>Using the imported character from Exercise 2, set up **Layer Parenting** (link arm to body, hand to arm), keyframe a basic wave motion (rotate arm layer 30° over 10 frames), test playback, fix any misalignments. Save as “ParentRig.fla”.</li>
+                        </ul>
+                    </div>
+                    <div class="hands-on-box p-6">
+                        <h3 class="text-xl font-semibold mb-2" style="color: var(--secondary-color);">Project Extension: Combine Exercises (Time: 25-30 minutes)</h3>
+                        <ul class="list-disc ml-4 text-gray-400 space-y-1">
+                            <li>Rig the stick-figure character with bones for both arms, animate a double-arm wave (24 frames, alternating arms), add a simple imported background, style with colors, and export as a short MP4 preview. Save as “FirstCharacterAnim.fla”.</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 6. Self-Assessment Quiz -->
+            <section id="section-6" class="mt-12 p-6 rounded-xl bg-card border border-border-color">
+                <div class="section-header-flex flex justify-between items-center pb-2 mb-4" style="border-bottom: 1px solid var(--border-color);">
+                    <h2 class="text-3xl font-bold" style="color: var(--secondary-color);">Self-Assessment Quiz:</h2>
+                    <div class="flex items-center space-x-2">
+                        <label for="check-6" class="text-sm font-medium text-gray-400 hidden sm:inline cursor-pointer">Mark Read</label>
+                        <input type="checkbox" id="check-6" data-section-id="section-6" onchange="toggleSectionRead(this)" class="section-checkbox cursor-pointer">
+                    </div>
+                </div>
+                <ul class="list-disc ml-4 space-y-3 text-gray-300 pt-4">
+                    <li>Why design characters in modular parts? (<strong class="strong-accent">Answer: For rigging flexibility and animation control.</strong>)</li>
+                    <li>How do you apply the Bone Tool? (<strong class="strong-accent">Answer: Select symbols, click-drag to add bones, set constraints.</strong>)</li>
+                    <li>Difference between IK and Layer Parenting? (<strong class="strong-accent">Answer: IK uses bones for joints; parenting links layers for simpler hierarchy.</strong>)</li>
+                    <li>How do you save a pose for reuse? (<strong class="strong-accent">Answer: Window > Pose Library > Add Pose.</strong>)</li>
+                    <li>Name one rigging error and its fix. (<strong class="strong-accent">Answer: E.g., Bones not connecting—ensure parts are symbols and aligned.</strong>)</li>
+                    <li>What shortcut converts to a symbol? (<strong class="keyboard-shortcut">Answer: F8.</strong>)</li>
+                </ul>
+                <p class="text-gray-400 mt-4 italic">
+                    This expanded module builds a beginner-to-intermediate bridge, with detailed character design and rigging techniques, additional concepts like pose libraries, and multiple exercises to ensure hands-on mastery. Complete all exercises before advancing to Module 5 for advanced character animation.
+                </p>
+            </section>
+        </div>
+
+        <!-- Notes Section -->
+        <section class="mt-16">
+            <h2 class="text-3xl font-bold border-b-2 pb-2 mb-4" style="color: var(--primary-color); border-bottom-color: var(--border-color);">My Personal Notes</h2>
+            <p class="text-sm text-gray-400 mb-3">These notes are saved automatically in your browser for Module 4.</p>
+            <textarea id="notesBox" rows="10" placeholder="Type your notes, reminders, or specific difficulties here..." class="w-full p-4 rounded-lg focus:outline-none focus:ring-2" style="focus-ring-color: var(--primary-color);"></textarea>
+        </section>
+
+        <!-- Final Instruction -->
+        <p class="mt-12 text-center text-lg italic text-gray-400">
+            Master these rigging concepts to prepare for complex character animation in the next module!
+        </p>
+
+    </div>
+
+    <!-- JavaScript for Theme, Color, Font, Progress Control, and Notes -->
+    <script>
+        const PANEL_ID = 'customizationPanel';
+        const BODY = document.body;
+        const PANEL = document.getElementById(PANEL_ID);
+        const MENU_TOGGLE_BTN = document.getElementById('menuToggleBtn');
+        const PRIMARY_COLOR_INPUT = document.getElementById('primaryColor');
+        const SECONDARY_COLOR_INPUT = document.getElementById('secondaryColor');
+        const TERTIARY_COLOR_INPUT = document.getElementById('tertiaryColor');
+        const FONT_SIZE_SLIDER = document.getElementById('fontSizeSlider');
+        const THEME_TOGGLE = document.getElementById('themeToggle');
+        const NOTES_BOX = document.getElementById('notesBox');
+        const MENU_ICON = document.getElementById('menuIcon');
+        const CLOSE_ICON = document.getElementById('closeIcon');
+
+        // Progress elements
+        const PROGRESS_BAR = document.getElementById('progressBar');
+        const PROGRESS_PERCENTAGE_SPAN = document.getElementById('progressPercentage');
+        
+        // --- Storage keys (Unique for Module 4) ---
+        const PROGRESS_STORAGE_KEY = 'module4Progress';
+        const NOTES_STORAGE_KEY = 'module4Notes';
+        
+        // All section IDs for this module (6 sections)
+        const SECTION_IDS = [
+            'section-1', 'section-2', 'section-3', 'section-4',
+            'section-5', 'section-6'
+        ];
+        
+        let sectionStatus = {}; 
+
+        const DEFAULT_SETTINGS = {
+            isDark: true,
+            primary: '#6366F1', // Indigo
+            secondary: '#34D399', // Emerald
+            tertiary: '#A5B4FC', // Light Purple
+            fontSize: 16, // Default base size in pixels
+        };
+
+        // --- Core Functions: Settings ---
+
+        /** Loads settings from localStorage and applies them. */
+        function loadSettings() {
+            // Theme settings are shared across modules for consistency
+            const savedSettings = JSON.parse(localStorage.getItem('themeSettings'));
+            let currentSettings;
+
+            if (savedSettings) {
+                currentSettings = { ...DEFAULT_SETTINGS, ...savedSettings };
+            } else {
+                currentSettings = DEFAULT_SETTINGS;
+            }
+            
+            // Set input values to current state
+            THEME_TOGGLE.checked = !currentSettings.isDark;
+            PRIMARY_COLOR_INPUT.value = currentSettings.primary;
+            SECONDARY_COLOR_INPUT.value = currentSettings.secondary;
+            TERTIARY_COLOR_INPUT.value = currentSettings.tertiary;
+            FONT_SIZE_SLIDER.value = currentSettings.fontSize;
+
+            applySettings(currentSettings);
+        }
+
+        /** Saves current settings to localStorage. */
+        function saveSettings(settings) {
+            localStorage.setItem('themeSettings', JSON.stringify(settings));
+        }
+
+        /** Applies the theme, colors, and font size to the document. */
+        function applySettings(settings) {
+            const root = document.documentElement;
+
+            // Apply Theme Mode
+            if (settings.isDark) {
+                BODY.classList.remove('light-mode');
+                root.style.setProperty('--bg-color', '#0A0A1F');
+                root.style.setProperty('--text-color', '#E5E7EB');
+                root.style.setProperty('--card-bg', '#111827');
+                root.style.setProperty('--border-color', '#374151');
+                root.style.setProperty('--highlight-color', '#FBBF24');
+            } else {
+                BODY.classList.add('light-mode');
+                root.style.setProperty('--bg-color', '#FFFFFF');
+                root.style.setProperty('--text-color', '#1F2937');
+                root.style.setProperty('--card-bg', '#F9FAFB');
+                root.style.setProperty('--border-color', '#E5E7EB');
+                root.style.setProperty('--highlight-color', '#94A3B8');
+            }
+
+            // Apply custom colors
+            root.style.setProperty('--primary-color', settings.primary);
+            root.style.setProperty('--secondary-color', settings.secondary);
+            root.style.setProperty('--tertiary-color', settings.tertiary);
+
+            // Applying font size to the HTML root element (document.documentElement)
+            root.style.fontSize = `${settings.fontSize}px`;
+
+            // Update floating button background
+            MENU_TOGGLE_BTN.style.backgroundColor = settings.primary;
+        }
+
+        /** Updates and saves settings based on current input values. */
+        function updateSettingsFromInputs() {
+            const settings = {
+                isDark: !THEME_TOGGLE.checked,
+                primary: PRIMARY_COLOR_INPUT.value,
+                secondary: SECONDARY_COLOR_INPUT.value,
+                tertiary: TERTIARY_COLOR_INPUT.value,
+                fontSize: parseInt(FONT_SIZE_SLIDER.value),
+            };
+            applySettings(settings);
+            saveSettings(settings);
+        }
+
+        /** Resets all settings to the original default and applies them. */
+        function setDefaultSettings() {
+            // Set input values back to defaults
+            THEME_TOGGLE.checked = !DEFAULT_SETTINGS.isDark;
+            PRIMARY_COLOR_INPUT.value = DEFAULT_SETTINGS.primary;
+            SECONDARY_COLOR_INPUT.value = DEFAULT_SETTINGS.secondary;
+            TERTIARY_COLOR_INPUT.value = DEFAULT_SETTINGS.tertiary;
+            FONT_SIZE_SLIDER.value = DEFAULT_SETTINGS.fontSize; // Reset font size to 16
+
+            // Apply and save the default settings
+            applySettings(DEFAULT_SETTINGS);
+            saveSettings(DEFAULT_SETTINGS);
+            
+            showTemporaryMessage('Theme settings reset to default dark mode and font size!');
+            togglePanel(); // Close panel after reset
+        }
+        
+        // --- Core Functions: Notes ---
+        
+        /** Loads notes from localStorage and applies them (Module 4 specific key). */
+        function loadNotes() {
+            const notes = localStorage.getItem(NOTES_STORAGE_KEY);
+            if (NOTES_BOX && notes) {
+                NOTES_BOX.value = notes;
+            }
+        }
+
+        /** Saves current notes to localStorage (Module 4 specific key). */
+        function saveNotes() {
+            if (NOTES_BOX) {
+                localStorage.setItem(NOTES_STORAGE_KEY, NOTES_BOX.value);
+            }
+        }
+
+        // --- Core Functions: Progress ---
+
+        /** Loads progress state from localStorage and updates UI (Module 4 specific key). */
+        function loadProgress() {
+            const savedProgress = localStorage.getItem(PROGRESS_STORAGE_KEY);
+            if (savedProgress) {
+                sectionStatus = JSON.parse(savedProgress);
+            } else {
+                // Initialize all to false if nothing is saved
+                SECTION_IDS.forEach(id => sectionStatus[id] = false);
+            }
+            
+            // Update checkboxes on screen
+            SECTION_IDS.forEach(id => {
+                // Checkbox ID format is 'check-1', 'check-2', etc.
+                const index = id.split('-')[1];
+                const checkId = `check-${index}`;
+                const checkbox = document.getElementById(checkId);
+                if (checkbox) {
+                    // Use boolean coercion (!!sectionStatus[id]) to set checked state
+                    checkbox.checked = !!sectionStatus[id];
+                }
+            });
+        }
+        
+        /** Updates the progress bar percentage display. */
+        function updateProgressBar() {
+            const totalSections = SECTION_IDS.length;
+            const completedSections = SECTION_IDS.filter(id => sectionStatus[id]).length;
+            const progressPercentage = (completedSections / totalSections) * 100;
+            const fixedPercentage = progressPercentage.toFixed(0);
+            
+            if (PROGRESS_BAR && PROGRESS_PERCENTAGE_SPAN) {
+                PROGRESS_BAR.style.width = `${fixedPercentage}%`;
+                PROGRESS_PERCENTAGE_SPAN.textContent = `${fixedPercentage}%`;
+            }
+        }
+
+        /** Handles the toggle change event for a section. */
+        function toggleSectionRead(checkbox) {
+            const sectionId = checkbox.getAttribute('data-section-id');
+            const isChecked = checkbox.checked;
+            
+            sectionStatus[sectionId] = isChecked;
+            localStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify(sectionStatus));
+            updateProgressBar();
+            
+            const message = isChecked ? `Module 4: Section marked as complete! (${sectionId})` : `Module 4: Section marked as incomplete. (${sectionId})`;
+            showTemporaryMessage(message);
+        }
+        
+        // Expose to global scope for HTML inline calls (onclick/onchange)
+        window.setDefaultSettings = setDefaultSettings;
+        window.togglePanel = togglePanel;
+        window.toggleSectionRead = toggleSectionRead;
+
+
+        // --- Utility Functions ---
+
+        /** Toggles the customization panel visibility. */
+        function togglePanel() {
+            const isOpen = PANEL.classList.toggle('open');
+            MENU_ICON.classList.toggle('hidden', isOpen);
+            CLOSE_ICON.classList.toggle('hidden', !isOpen);
+        }
+        
+        // Custom Message Box function (replaces alert())
+        function showTemporaryMessage(message) {
+            let msgBox = document.getElementById('tempMessageBox');
+            if (!msgBox) {
+                msgBox = document.createElement('div');
+                msgBox.id = 'tempMessageBox';
+                // Adjusting positioning for mobile view
+                msgBox.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white p-3 rounded-lg shadow-xl z-[2000] opacity-0 transition-opacity duration-300 pointer-events-none text-sm sm:text-base';
+                document.body.appendChild(msgBox);
+            }
+            msgBox.textContent = message;
+            msgBox.style.opacity = '1';
+
+            setTimeout(() => {
+                msgBox.style.opacity = '0';
+            }, 3000);
+        }
+
+        // --- Initialization ---
+
+        window.onload = () => {
+            loadSettings();
+            loadNotes(); // Load saved notes for Module 4
+            loadProgress(); // Load saved progress for Module 4
+            updateProgressBar(); // Update bar based on loaded progress
+
+            // Attach listeners to input fields
+            PRIMARY_COLOR_INPUT.addEventListener('input', updateSettingsFromInputs);
+            SECONDARY_COLOR_INPUT.addEventListener('input', updateSettingsFromInputs);
+            TERTIARY_COLOR_INPUT.addEventListener('input', updateSettingsFromInputs);
+            FONT_SIZE_SLIDER.addEventListener('input', updateSettingsFromInputs); 
+            THEME_TOGGLE.addEventListener('change', updateSettingsFromInputs);
+            
+            // Listener for notes box saving
+            if (NOTES_BOX) {
+                NOTES_BOX.addEventListener('input', saveNotes);
+            }
+        };
+    </script>
+</body>
+</html>
