@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 7: Combining Scenes and Multi-Scene Workflows</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Configure Tailwind -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Bebas Neue', 'sans-serif'],
+                    },
+                },
+            }
+        }
+    </script>
+    <style>
+        /* --- 1. CSS Variables for Customization --- */
+        :root {
+            /* Default Dark Mode Colors */
+            --bg-color: #0A0A1F;
+            --text-color: #E5E7EB;
+            --card-bg: #111827;
+            --border-color: #374151;
+            --primary-color: #6366F1; /* Default Indigo (Main Headings) */
+            --secondary-color: #34D399; /* Default Emerald (Exercise Headers/Accents) */
+            --tertiary-color: #A5B4FC; /* Default Light Purple (Bullet Strong Text) */
+            --highlight-color: #FBBF24; /* Yellow for specific elements like keyboard shortcuts */
+        }
+
+        /* Light Mode Overrides */
+        .light-mode {
+            --bg-color: #FFFFFF;
+            --text-color: #1F2937;
+            --card-bg: #F9FAFB;
+            --border-color: #E5E7EB;
+            --highlight-color: #94A3B8;
+        }
+
+        /* --- 2. Dynamic Styling using Variables --- */
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+            min-height: 100vh;
+        }
+
+        .header-title {
+             /* Uses CSS variables for the gradient */
+            background-image: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        h2 {
+            color: var(--primary-color); /* Uses Primary Color */
+        }
+
+        /* Exercise headers and quiz headers use secondary color */
+        #section-5 h2, #section-6 h2 {
+            color: var(--secondary-color);
+        }
+
+        /* Bullet point strong text uses the new tertiary color */
+        .strong-accent {
+            color: var(--tertiary-color);
+        }
+
+        .border-primary {
+            border-color: var(--primary-color) !important;
+        }
+        
+        .bg-card {
+            background-color: var(--card-bg);
+        }
+
+        .syllabus-list li::marker {
+            color: var(--primary-color); /* Main bullet marker remains Primary */
+        }
+        
+        /* Custom list style for deeper indentation */
+        .syllabus-list li {
+            margin-bottom: 0.5rem;
+        }
+        .syllabus-list ul {
+            padding-left: 1.5em; /* Use em to scale with font size */
+            margin-top: 0.5em;
+            list-style-type: disc;
+        }
+        .syllabus-list ul ul {
+            list-style-type: circle;
+        }
+        .syllabus-list ul ul ul {
+            list-style-type: square;
+        }
+
+        /* Styling for the hands-on sections */
+        .hands-on-box {
+            border: 2px solid;
+            border-image: linear-gradient(to right, var(--primary-color), var(--secondary-color)) 1;
+            box-shadow: 0 5px 20px rgba(99, 102, 241, 0.2);
+            position: relative;
+            overflow: hidden;
+            background-color: var(--card-bg);
+            border-radius: 0.5rem;
+        }
+
+        .keyboard-shortcut {
+            color: var(--highlight-color);
+            font-weight: 600;
+        }
+
+        /* --- 3. Customization Panel Styles --- */
+        #customizationPanel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 80vw;
+            max-width: 300px;
+            height: 100%;
+            z-index: 1000;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease-in-out;
+            box-shadow: 4px 0 15px rgba(0, 0, 0, 0.5);
+            padding: 1.5rem;
+            background-color: var(--card-bg);
+            border-right: 1px solid var(--border-color);
+            color: var(--text-color);
+            overflow-y: auto;
+        }
+        #customizationPanel.open {
+            transform: translateX(0);
+        }
+
+        /* Button floating in the bottom right */
+        #menuToggleBtn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1001;
+            width: 56px;
+            height: 56px;
+            background-color: var(--primary-color);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+            transition: background-color 0.3s;
+        }
+
+        /* Slider Toggle CSS (for aesthetics) - Used for Theme only */
+        .switch .slider {
+            background-color: var(--border-color);
+        }
+        .switch input:checked + .slider {
+            background-color: var(--primary-color);
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+        input:checked + .slider:before {
+            transform: translateX(16px);
+        }
+        
+        /* Style the range input track for the font slider */
+        #fontSizeSlider::-webkit-slider-runnable-track {
+            height: 8px;
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+        #fontSizeSlider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            background: var(--primary-color);
+            cursor: pointer;
+            border-radius: 50%;
+            margin-top: -5px; 
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+        }
+        
+        /* Notes Box Styling */
+        #notesBox {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        /* --- 4. Checkbox Styling (Mark as Read) --- */
+        .section-checkbox {
+            /* Force custom styling to override native white background */
+            -webkit-appearance: none; 
+            appearance: none;
+            
+            /* Sizing and basic style */
+            height: 24px;
+            width: 24px;
+            min-width: 24px;
+            min-height: 24px;
+            
+            /* Apply dark theme colors for unchecked state */
+            border: 2px solid var(--border-color);
+            background-color: var(--card-bg); 
+            border-radius: 6px;
+            margin: 0;
+            flex-shrink: 0; 
+            cursor: pointer;
+            
+            /* Positioning for custom checkmark */
+            position: relative; 
+            display: inline-block;
+            transition: background-color 0.1s ease-in-out;
+        }
+
+        /* Checked state: use secondary color for background */
+        .section-checkbox:checked {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+        
+        /* Custom checkmark using ::after on checked state */
+        .section-checkbox:checked::after {
+            content: '';
+            position: absolute;
+            top: 4px;
+            left: 8px;
+            width: 6px;
+            height: 12px;
+            /* White checkmark for high contrast on secondary color background */
+            border: solid white;
+            border-width: 0 3px 3px 0;
+            transform: rotate(45deg);
+        }
+        
+        /* Ensure the h2 takes available space in the flex container */
+        .section-header-flex h2 {
+            flex-shrink: 1;
+            margin-right: 1rem;
+        }
+        
+    </style>
+</head>
+<body>
+
+    <!-- Customization Panel (Slides out from left) -->
+    <div id="customizationPanel">
+
+        <!-- Syllabus Overview Link -->
+        <a href="https://prayosh.github.io/Animate-Mastery-Path/home.html" 
+           class="flex items-center justify-center w-full p-3 mb-6 font-semibold rounded-lg transition duration-200 shadow-lg hover:shadow-xl" 
+           style="background-color: var(--primary-color); color: var(--card-bg);">
+            <!-- Syllabus Icon (Document with Lines) -->
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            Syllabus Overview
+        </a>
+        <!-- END Syllabus Overview Link -->
+
+        <!-- Theme Settings Heading -->
+        <h2 class="text-2xl font-bold mb-4 border-b pb-2" style="color: var(--primary-color); border-bottom-color: var(--border-color);">Theme Settings</h2>
+
+        <!-- Theme Toggle -->
+        <div class="mb-6">
+            <label class="block text-sm font-medium mb-2" style="color: var(--secondary-color);">Theme Mode</label>
+            <div class="flex items-center space-x-4 p-2 rounded-lg" style="background-color: var(--border-color);">
+                <span class="text-sm">Dark</span>
+                <label class="switch relative inline-block w-10 h-6">
+                    <input type="checkbox" id="themeToggle" class="opacity-0 w-0 h-0">
+                    <span class="slider absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full transition-all duration-300"></span>
+                </label>
+                <span class="text-sm">Light</span>
+            </div>
+        </div>
+
+        <!-- Primary Color Picker -->
+        <div class="mb-6">
+            <label for="primaryColor" class="block text-sm font-medium mb-2" style="color: var(--secondary-color);">Primary Colour (Main Headings)</label>
+            <input type="color" id="primaryColor" value="#6366F1" class="w-full h-10 border-none rounded-lg p-0 cursor-pointer">
+        </div>
+
+        <!-- Secondary Color Picker -->
+        <div class="mb-6">
+            <label for="secondaryColor" class="block text-sm font-medium mb-2" style="color: var(--secondary-color);">Secondary Colour (Exercise Headers)</label>
+            <input type="color" id="secondaryColor" value="#34D399" class="w-full h-10 border-none rounded-lg p-0 cursor-pointer">
+        </div>
+
+        <!-- Tertiary Color Picker -->
+        <div class="mb-8">
+            <label for="tertiaryColor" class="block text-sm font-medium mb-2" style="color: var(--secondary-color);">Accent Text Colour (List Items)</label>
+            <input type="color" id="tertiaryColor" value="#A5B4FC" class="w-full h-10 border-none rounded-lg p-0 cursor-pointer">
+        </div>
+        
+        <!-- Font Size Slider -->
+        <div class="mb-8">
+            <label for="fontSizeSlider" class="block text-sm font-medium mb-3" style="color: var(--secondary-color);">Text Font Size</label>
+            <input type="range" id="fontSizeSlider" min="14" max="20" step="1" value="16" class="w-full h-2 rounded-lg appearance-none cursor-pointer">
+            <div class="flex justify-between text-xs mt-1 text-gray-400">
+                <span>Small (14px)</span>
+                <span>Large (20px)</span>
+            </div>
+        </div>
+
+
+        <!-- Reset Button -->
+        <button onclick="setDefaultSettings()" class="w-full px-4 py-2 font-semibold rounded-lg transition duration-200" style="background-color: var(--primary-color); color: var(--card-bg);">
+            Reset to Default Theme
+        </button>
+    </div>
+
+    <!-- Menu Toggle Button (Bottom Right) -->
+    <button id="menuToggleBtn" onclick="togglePanel()" class="fixed bottom-5 right-5 w-14 h-14 rounded-full flex items-center justify-center text-white shadow-xl transition-all duration-300 hover:scale-110">
+        <svg id="menuIcon" class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        <svg id="closeIcon" class="w-7 h-7 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+    </button>
+
+    <!-- Main Content Container -->
+    <div class="max-w-4xl mx-auto pb-16">
+
+        <!-- Header -->
+        <header class="text-center py-6 mb-8 border-b" style="border-bottom-color: var(--primary-color);">
+            <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight font-display header-title">
+                Module 7: Combining Scenes and Multi-Scene Workflows
+            </h1>
+            <p class="mt-2 text-xl italic font-medium" style="color: var(--secondary-color);">
+                (Advanced)
+            </p>
+        </header>
+
+        <!-- Progress Bar Container -->
+        <div class="mb-8 p-3 rounded-lg bg-card border border-border-color">
+            <div class="flex justify-between items-center mb-1 text-sm font-medium">
+                <span>Progress</span>
+                <span id="progressPercentage">0%</span>
+            </div>
+            <div id="progressBarContainer" class="w-full h-3 rounded-full overflow-hidden" style="background-color: var(--border-color);">
+                <div id="progressBar" class="h-full transition-all duration-500" style="background-color: var(--secondary-color); width: 0%;"></div>
+            </div>
+        </div>
+
+        <!-- Focus Text -->
+        <div class="mb-8 p-4 rounded-lg border border-border-color bg-card">
+            <p class="text-lg leading-relaxed">
+                <strong class="strong-accent">Focus:</strong> Linking multiple scenes to create cohesive, full-length videos for cartoons, movies, series, and marketing ads. This module advances your skills to manage complex, multi-scene projects, teaching how to build and combine scenes using Adobe Animate’s Scenes panel, create seamless transitions (e.g., fades, cuts), and integrate storyboarding for narrative flow. Additional concepts like scene optimization, timeline management, and reusable scene templates are included to ensure professional workflows. Multiple hands-on exercises reinforce practical skills, preparing you for creating longer animations and polished marketing ads with efficient, modular approaches.
+            </p>
+            <p class="text-lg leading-relaxed mt-4">
+                <strong class="strong-accent">Learning Objectives:</strong>
+            </p>
+            <ul class="list-disc ml-6 mt-2 space-y-1 text-gray-400">
+                <li>Create and manage multiple scenes for cohesive video projects.</li>
+                <li>Apply professional transitions (e.g., fades, cuts) to link scenes smoothly.</li>
+                <li>Use storyboarding techniques within Animate to plan scene sequences.</li>
+                <li>Optimize multi-scene workflows for efficiency and collaboration.</li>
+                <li>Troubleshoot advanced scene-linking issues and maintain project organization.</li>
+                <li>Build practical experience through exercises simulating cartoon episodes or ad sequences.</li>
+            </ul>
+        </div>
+
+
+        <!-- Syllabus Content -->
+        <div class="syllabus-list space-y-8">
+            
+            <!-- 1. Transitions -->
+            <section id="section-1">
+                <div class="section-header-flex flex justify-between items-center border-b-2 border-primary/40 pb-2">
+                    <h2 class="text-3xl font-bold">Transitions:</h2>
+                    <div class="flex items-center space-x-2">
+                        <label for="check-1" class="text-sm font-medium text-gray-400 hidden sm:inline cursor-pointer">Mark Read</label>
+                        <input type="checkbox" id="check-1" data-section-id="section-1" onchange="toggleSectionRead(this)" class="section-checkbox cursor-pointer">
+                    </div>
+                </div>
+                <ul class="ml-4 space-y-3 pt-4">
+                    <li>
+                        <strong class="strong-accent">Fade Transitions:</strong>
+                        <ul class="list-disc ml-4">
+                            <li><strong>Concept:</strong> Gradually changing visibility (e.g., fade to black) for smooth scene changes in cartoons or ads.</li>
+                            <li><strong>Setup:</strong> Using motion tweens on alpha property (Properties > Color Effect > Alpha, 100% to 0% over frames), applying to full stage or specific layers (e.g., fade-out character layer).</li>
+                            <li><strong>Fade Types:</strong> Fade to black (use black rectangle symbol covering stage), crossfade (overlap two scenes, fade one in as other fades out).</li>
+                            <li><strong>Easing:</strong> Applying Ease In/Out presets for natural fade timing, adjusting custom curves in Motion Editor for precise control.</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Cut Transitions:</strong>
+                        <ul class="list-disc ml-4">
+                            <li><strong>Concept:</strong> Instant scene switches for fast-paced ads or dramatic cartoon moments.</li>
+                            <li><strong>Setup:</strong> Using blank keyframes (<code class="keyboard-shortcut">F7</code>) to abruptly change content, ensuring seamless layer alignment across scenes (e.g., character in same position).</li>
+                            <li><strong>Variations:</strong> Hard cuts (immediate switch), match cuts (aligning actions, e.g., character’s hand position matches across scenes).</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Additional Transition Types:</strong>
+                        <ul class="list-disc ml-4">
+                            <li><strong>Wipes:</strong> Using mask layers (right-click layer > Mask) to reveal/hide scenes (e.g., horizontal wipe with animated rectangle mask).</li>
+                            <li><strong>Dissolves:</strong> Combining alpha tweens with blur filters (Properties > Filters > Blur) for soft transitions.</li>
+                            <li><strong>Custom Transitions:</strong> Animating symbols (e.g., sliding door effect) to transition between scenes.</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Additional Concepts:</strong>
+                        <ul class="list-disc ml-4">
+                            <li><strong>Timing Control:</strong> Setting transition durations (e.g., 12 frames for quick ads, 24 frames for cinematic cartoons) to match pacing.</li>
+                            <li><strong>Previewing:</strong> Using Test Movie (<code class="keyboard-shortcut">Ctrl+Enter</code>) to check transition smoothness, enabling Loop Playback for repeated testing.</li>
+                        </ul>
+                    </li>
+                </ul>
+            </section>
+
+            <!-- 2. Multi-Scene Management -->
+            <section id="section-2">
+                <div class="section-header-flex flex justify-between items-center border-b-2 border-primary/40 pb-2 mt-8">
+                    <h2 class="text-3xl font-bold">Multi-Scene Management:</h2>
+                    <div class="flex items-center space-x-2">
+                        <label for="check-2" class="text-sm font-medium text-gray-400 hidden sm:inline cursor-pointer">Mark Read</label>
+                        <input type="checkbox" id="check-2" data-section-id="section-2" onchange="toggleSectionRead(this)" class="section-checkbox cursor-pointer">
+                    </div>
+                </div>
+                <ul class="ml-4 space-y-3 pt-4">
+                    <li>
+                        <strong class="strong-accent">Scenes Panel:</strong>
+                        <ul class="list-disc ml-4">
+                            <li><strong>Accessing:</strong> <code class="keyboard-shortcut">Window > Scenes</code>, viewing/adding scenes (Add Scene button or right-click > New Scene).</li>
+                            <li><strong>Organizing:</strong> Naming scenes descriptively (e.g., “Scene1\_Intro”, “Scene2\_Action”), reordering via drag-and-drop, duplicating scenes for variations.</li>
+                            <li><strong>Navigating:</strong> Switching between scenes in panel, ensuring continuity (e.g., consistent frame rates across scenes via <code class="keyboard-shortcut">Modify > Document</code>).</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Combining Scenes:</strong>
+                        <ul class="list-disc ml-4">
+                            <li><strong>Manual Combining:</strong> Copying/pasting layers or keyframes between scenes (select frames, right-click > Copy Frames, paste in new scene).</li>
+                            <li><strong>Importing Timelines:</strong> Importing entire .fla timelines (<code class="keyboard-shortcut">File > Import > Open External Library</code>), dragging scenes or assets into current project.</li>
+                            <li><strong>Linking Scenes:</strong> Ensuring seamless flow (e.g., matching character positions, background colors) using guides or snapping for alignment.</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Additional Concepts:</strong>
+                        <ul class="list-disc ml-4">
+                            <li><strong>Scene Length Management:</strong> Adjusting frame counts per scene (e.g., 48 frames for short ad segment, 240 frames for cartoon sequence) for pacing.</li>
+                            <li><strong>Global Assets:</strong> Using Library to share symbols (e.g., character rigs, backgrounds) across scenes, updating once for all instances.</li>
+                            <li><strong>Export Considerations:</strong> Combining scenes for single output (e.g., MP4 for video) vs. separate exports (e.g., HTML5 for ads).</li>
+                        </ul>
+                    </li>
+                </ul>
+            </section>
+
+            <!-- 3. Storyboarding -->
+            <section id="section-3">
+                <div class="section-header-flex flex justify-between items-center border-b-2 border-primary/40 pb-2 mt-8">
+                    <h2 class="text-3xl font-bold">Storyboarding:</h2>
+                    <div class="flex items-center space-x-2">
+                        <label for="check-3" class="text-sm font-medium text-gray-400 hidden sm:inline cursor-pointer">Mark Read</label>
+                        <input type="checkbox" id="check-3" data-section-id="section-3" onchange="toggleSectionRead(this)" class="section-checkbox cursor-pointer">
+                    </div>
+                </div>
+                <ul class="ml-4 space-y-3 pt-4">
+                    <li>
+                        <strong class="strong-accent">Basic Planning in Animate:</strong>
+                        <ul class="list-disc ml-4">
+                            <li><strong>Concept:</strong> Sketching scene flow to plan narrative or ad structure (e.g., intro, action, conclusion).</li>
+                            <li><strong>Storyboard Setup:</strong> Creating a guide layer (right-click > Guide) for rough sketches, using <code class="keyboard-shortcut">Pencil Tool (Y)</code> to draw thumbnails or layout key poses.</li>
+                            <li><strong>Timeline Storyboarding:</strong> Adding placeholder keyframes (<code class="keyboard-shortcut">F7</code>) to mark major actions (e.g., character enters, prop moves), labeling frames (Timeline > Frame Label) for clarity.</li>
+                            <li><strong>Visual Planning:</strong> Using stage grid (<code class="keyboard-shortcut">View > Grid > Show Grid</code>) for composition, noting camera moves or transitions in comments.</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Additional Concepts:</strong>
+                        <ul class="list-disc ml-4">
+                            <li><strong>Narrative Flow:</strong> Planning pacing (e.g., short scenes for ads, longer for cartoon episodes), ensuring clear storytelling (e.g., hook in first 5 seconds for ads).</li>
+                            <li><strong>Collaboration Prep:</strong> Exporting storyboard frames as PNG sequence (<code class="keyboard-shortcut">File > Export > Export Image</code>) for team feedback or client approval.</li>
+                            <li><strong>Revisions:</strong> Using duplicate scenes to test alternate sequences without affecting main project.</li>
+                        </ul>
+                    </li>
+                </ul>
+            </section>
+
+            <!-- 4. Troubleshooting for Advanced Users -->
+            <section id="section-4">
+                <div class="section-header-flex flex justify-between items-center border-b-2 border-primary/40 pb-2 mt-8">
+                    <h2 class="text-3xl font-bold">Troubleshooting for Advanced Users:</h2>
+                    <div class="flex items-center space-x-2">
+                        <label for="check-4" class="text-sm font-medium text-gray-400 hidden sm:inline cursor-pointer">Mark Read</label>
+                        <input type="checkbox" id="check-4" data-section-id="section-4" onchange="toggleSectionRead(this)" class="section-checkbox cursor-pointer">
+                    </div>
+                </div>
+                <ul class="ml-4 space-y-3 pt-4">
+                    <li>
+                        <strong class="strong-accent">Common Errors:</strong>
+                        <ul class="list-disc ml-4">
+                            <li><strong>Scene Misalignment:</strong> Character/prop positions inconsistent across scenes (use guides or X/Y coordinates to match), or mismatched frame rates (check Document settings).</li>
+                            <li><strong>Transition Glitches:</strong> Fade not working (check alpha keyframes), or wipe mask misaligned (adjust mask layer keyframes).</li>
+                            <li><strong>Timeline Import Issues:</strong> Assets missing (verify Library linkage), or frames not pasting (select correct layer/timeline).</li>
+                            <li><strong>Performance Lag:</strong> Too many scenes/layers (merge similar layers, simplify symbols), or high-resolution assets (optimize via Trace Bitmap).</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Solutions:</strong>
+                        <ul class="list-disc ml-4">
+                            <li>Test transitions individually (<code class="keyboard-shortcut">Ctrl+Enter</code> on single scene), save backups before combining scenes, use Library’s “Find Unused Items” to clean up, check Adobe forums for “Scenes panel errors.”</li>
+                        </ul>
+                    </li>
+                    <li>
+                         <strong class="strong-accent">Additional Concepts:</strong>
+                        <ul class="list-disc ml-4">
+                            <li>Checking export settings for multi-scene videos (e.g., MP4 compatibility), using version control (save as “Project\_v1.fla”, “Project\_v2.fla”) for safety.</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Efficiency Tips:</strong>
+                        <ul class="list-disc ml-4">
+                            <li><strong>Modular Clips:</strong> Convert scenes to Movie Clips (<code class="keyboard-shortcut">Insert > New Symbol > Movie Clip</code>), store in Library for reuse across projects (e.g., reusable intro sequence).</li>
+                            <li><strong>Batch Operations:</strong> Copy/paste entire layer sets across scenes, use shared Library for consistent assets (e.g., same character rig in all scenes).</li>
+                            <li><strong>Shortcuts:</strong> <code class="keyboard-shortcut">F6</code> for keyframes, <code class="keyboard-shortcut">Ctrl+Shift+S</code> for Scenes panel, <code class="keyboard-shortcut">Ctrl+R</code> for rulers/guides, <code class="keyboard-shortcut">Ctrl+Enter</code> for Test Movie.</li>
+                            <li><strong>Workflow:</strong> Plan storyboard on guide layer first, test transitions in separate .fla to avoid main project errors, use templates for recurring scene setups (e.g., “Ad\_Intro.fla”).</li>
+                            <li><strong>Optimization:</strong> Minimize scene count for ads (1-3 scenes), use lower frame rates (24 fps) for simpler cartoons to reduce processing.</li>
+                        </ul>
+                    </li>
+                </ul>
+            </section>
+
+            <!-- 5. Hands-On Exercises -->
+            <section id="section-5" class="mt-12">
+                <div class="section-header-flex flex justify-between items-center border-b-2 pb-2 mb-6" style="border-bottom-color: var(--secondary-color);">
+                    <h2 class="text-3xl font-bold" style="color: var(--secondary-color);">Hands-On Exercises (Practice for Reinforcement):</h2>
+                    <div class="flex items-center space-x-2">
+                        <label for="check-5" class="text-sm font-medium text-gray-400 hidden sm:inline cursor-pointer">Mark Read</label>
+                        <input type="checkbox" id="check-5" data-section-id="section-5" onchange="toggleSectionRead(this)" class="section-checkbox cursor-pointer">
+                    </div>
+                </div>
+                <div class="space-y-6">
+                    <div class="hands-on-box p-6">
+                        <h3 class="text-xl font-semibold mb-2" style="color: var(--secondary-color);">Exercise 1: Fade Transition (Time: 15-20 minutes)</h3>
+                        <ul class="list-disc ml-4 text-gray-400 space-y-1">
+                            <li>Create a new document (1280x720, 24 fps), build a simple scene (e.g., character on background), add a black rectangle symbol covering stage, create a 12-frame fade-out (alpha 100% to 0%), preview with Test Movie. Save as “FadeTransition.fla”.</li>
+                        </ul>
+                    </div>
+                    <div class="hands-on-box p-6">
+                        <h3 class="text-xl font-semibold mb-2" style="color: var(--secondary-color);">Exercise 2: Cut and Wipe Transitions (Time: 20-25 minutes)</h3>
+                        <ul class="list-disc ml-4 text-gray-400 space-y-1">
+                            <li>Create two scenes (Scene 1: character standing, Scene 2: character sitting), add a hard cut (end Scene 1 with blank keyframe, start Scene 2 immediately), then create a wipe transition using a mask layer (animate rectangle mask over 10 frames). Save as “CutWipe.fla”.</li>
+                        </ul>
+                    </div>
+                    <div class="hands-on-box p-6">
+                        <h3 class="text-xl font-semibold mb-2" style="color: var(--secondary-color);">Exercise 3: Storyboarding (Time: 15-20 minutes)</h3>
+                        <ul class="list-disc ml-4 text-gray-400 space-y-1">
+                            <li>In a new document, create a guide layer, sketch a 3-scene sequence (e.g., character enters, picks up prop, exits), add frame labels (e.g., “Enter”, “Action”), export as PNG sequence for review. Save as “Storyboard.fla”.</li>
+                        </ul>
+                    </div>
+                    <div class="hands-on-box p-6">
+                        <h3 class="text-xl font-semibold mb-2" style="color: var(--secondary-color);">Exercise 4: Multi-Scene Setup (Time: 25-30 minutes)</h3>
+                        <ul class="list-disc ml-4 text-gray-400 space-y-1">
+                            <li>Build two scenes (Scene 1: character enters room, Scene 2: character interacts with prop like a chair), import a rigged character and background from Library, ensure position consistency, add a fade transition between scenes, preview full sequence. Save as “MultiScene.fla”.</li>
+                        </ul>
+                    </div>
+                    <div class="hands-on-box p-6">
+                        <h3 class="text-xl font-semibold mb-2" style="color: var(--secondary-color);">Project Extension: Full Video Sequence (Time: 30-40 minutes)</h3>
+                        <ul class="list-disc ml-4 text-gray-400 space-y-1">
+                            <li>Combine exercises: Create a 3-scene sequence (e.g., character enters room, sits, waves), use storyboard on guide layer to plan, animate character (reuse Module 4/5 rigs), add a prop (e.g., “sym\_Chair”), apply fade and wipe transitions, export as MP4. Save as “FullVideo.fla”.</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 6. Self-Assessment Quiz -->
+            <section id="section-6" class="mt-12 p-6 rounded-xl bg-card border border-border-color">
+                <div class="section-header-flex flex justify-between items-center pb-2 mb-4" style="border-bottom: 1px solid var(--border-color);">
+                    <h2 class="text-3xl font-bold" style="color: var(--secondary-color);">Self-Assessment Quiz:</h2>
+                    <div class="flex items-center space-x-2">
+                        <label for="check-6" class="text-sm font-medium text-gray-400 hidden sm:inline cursor-pointer">Mark Read</label>
+                        <input type="checkbox" id="check-6" data-section-id="section-6" onchange="toggleSectionRead(this)" class="section-checkbox cursor-pointer">
+                    </div>
+                </div>
+                <ul class="list-disc ml-4 space-y-3 text-gray-300 pt-4">
+                    <li>What is a fade transition and how is it set up? (<strong class="strong-accent">Answer: Alpha change from 100% to 0% using motion tween on rectangle or layer.</strong>)</li>
+                    <li>How do you add a new scene? (<strong class="strong-accent">Answer: Window > Scenes > Add Scene or right-click in Scenes panel.</strong>)</li>
+                    <li>Describe a match cut. (<strong class="strong-accent">Answer: Aligning actions across scenes, e.g., same character pose.</strong>)</li>
+                    <li>How do you import a timeline? (<strong class="strong-accent">Answer: File > Import > Open External Library, drag to current project.</strong>)</li>
+                    <li>Name one multi-scene error and its fix. (<strong class="strong-accent">Answer: E.g., Misaligned assets—use guides or X/Y coordinates to match.</strong>)</li>
+                    <li>What shortcut opens the Scenes panel? (<strong class="strong-accent">Answer: Ctrl+Shift+S.</strong>)</li>
+                </ul>
+                <p class="text-gray-400 mt-4 italic">
+                    This expanded module equips you with advanced skills for linking scenes into full videos, with detailed transition techniques, storyboarding, and multi-scene management. Multiple exercises ensure practical mastery, preparing you for enhancing animations in Module 8. Complete all before advancing.
+                </p>
+            </section>
+        </div>
+
+        <!-- Notes Section -->
+        <section class="mt-16">
+            <h2 class="text-3xl font-bold border-b-2 pb-2 mb-4" style="color: var(--primary-color); border-bottom-color: var(--border-color);">My Personal Notes</h2>
+            <p class="text-sm text-gray-400 mb-3">These notes are saved automatically in your browser for Module 7.</p>
+            <textarea id="notesBox" rows="10" placeholder="Type your notes, reminders, or specific difficulties here..." class="w-full p-4 rounded-lg focus:outline-none focus:ring-2" style="focus-ring-color: var(--primary-color);"></textarea>
+        </section>
+
+        <!-- Final Instruction -->
+        <p class="mt-12 text-center text-lg italic text-gray-400">
+            With solid scene composition skills, you are ready to tackle multi-scene production workflows!
+        </p>
+
+    </div>
+
+    <!-- JavaScript for Theme, Color, Font, Progress Control, and Notes -->
+    <script>
+        const PANEL_ID = 'customizationPanel';
+        const BODY = document.body;
+        const PANEL = document.getElementById(PANEL_ID);
+        const MENU_TOGGLE_BTN = document.getElementById('menuToggleBtn');
+        const PRIMARY_COLOR_INPUT = document.getElementById('primaryColor');
+        const SECONDARY_COLOR_INPUT = document.getElementById('secondaryColor');
+        const TERTIARY_COLOR_INPUT = document.getElementById('tertiaryColor');
+        const FONT_SIZE_SLIDER = document.getElementById('fontSizeSlider');
+        const THEME_TOGGLE = document.getElementById('themeToggle');
+        const NOTES_BOX = document.getElementById('notesBox');
+        const MENU_ICON = document.getElementById('menuIcon');
+        const CLOSE_ICON = document.getElementById('closeIcon');
+
+        // Progress elements
+        const PROGRESS_BAR = document.getElementById('progressBar');
+        const PROGRESS_PERCENTAGE_SPAN = document.getElementById('progressPercentage');
+        
+        // --- Storage keys (Unique for Module 7) ---
+        // *** IMPORTANT: Changed keys to module7Progress and module7Notes ***
+        const PROGRESS_STORAGE_KEY = 'module7Progress'; 
+        const NOTES_STORAGE_KEY = 'module7Notes'; 
+        const THEME_STORAGE_KEY = 'themeSettings'; // Shared key for global theme
+        
+        // All section IDs for this module (6 sections)
+        const SECTION_IDS = [
+            'section-1', 'section-2', 'section-3', 'section-4',
+            'section-5', 'section-6'
+        ];
+        
+        let sectionStatus = {}; 
+
+        const DEFAULT_SETTINGS = {
+            isDark: true,
+            primary: '#6366F1', // Indigo
+            secondary: '#34D399', // Emerald
+            tertiary: '#A5B4FC', // Light Purple
+            fontSize: 16, // Default base size in pixels
+        };
+
+        // --- Core Functions: Settings ---
+
+        /** Loads settings from localStorage and applies them. */
+        function loadSettings() {
+            // Theme settings are shared across modules for consistency
+            const savedSettings = JSON.parse(localStorage.getItem(THEME_STORAGE_KEY));
+            let currentSettings;
+
+            if (savedSettings) {
+                currentSettings = { ...DEFAULT_SETTINGS, ...savedSettings };
+            } else {
+                currentSettings = DEFAULT_SETTINGS;
+            }
+            
+            // Set input values to current state
+            THEME_TOGGLE.checked = !currentSettings.isDark;
+            PRIMARY_COLOR_INPUT.value = currentSettings.primary;
+            SECONDARY_COLOR_INPUT.value = currentSettings.secondary;
+            TERTIARY_COLOR_INPUT.value = currentSettings.tertiary;
+            FONT_SIZE_SLIDER.value = currentSettings.fontSize;
+
+            applySettings(currentSettings);
+        }
+
+        /** Saves current settings to localStorage. */
+        function saveSettings(settings) {
+            localStorage.setItem(THEME_STORAGE_KEY, JSON.stringify(settings));
+        }
+
+        /** Applies the theme, colors, and font size to the document. */
+        function applySettings(settings) {
+            const root = document.documentElement;
+
+            // Apply Theme Mode
+            if (settings.isDark) {
+                BODY.classList.remove('light-mode');
+                root.style.setProperty('--bg-color', '#0A0A1F');
+                root.style.setProperty('--text-color', '#E5E7EB');
+                root.style.setProperty('--card-bg', '#111827');
+                root.style.setProperty('--border-color', '#374151');
+                root.style.setProperty('--highlight-color', '#FBBF24');
+            } else {
+                BODY.classList.add('light-mode');
+                root.style.setProperty('--bg-color', '#FFFFFF');
+                root.style.setProperty('--text-color', '#1F2937');
+                root.style.setProperty('--card-bg', '#F9FAFB');
+                root.style.setProperty('--border-color', '#E5E7EB');
+                root.style.setProperty('--highlight-color', '#94A3B8');
+            }
+
+            // Apply custom colors
+            root.style.setProperty('--primary-color', settings.primary);
+            root.style.setProperty('--secondary-color', settings.secondary);
+            root.style.setProperty('--tertiary-color', settings.tertiary);
+
+            // Applying font size to the HTML root element (document.documentElement)
+            root.style.fontSize = `${settings.fontSize}px`;
+
+            // Update floating button background
+            MENU_TOGGLE_BTN.style.backgroundColor = settings.primary;
+        }
+
+        /** Updates and saves settings based on current input values. */
+        function updateSettingsFromInputs() {
+            const settings = {
+                isDark: !THEME_TOGGLE.checked,
+                primary: PRIMARY_COLOR_INPUT.value,
+                secondary: SECONDARY_COLOR_INPUT.value,
+                tertiary: TERTIARY_COLOR_INPUT.value,
+                fontSize: parseInt(FONT_SIZE_SLIDER.value),
+            };
+            applySettings(settings);
+            saveSettings(settings);
+        }
+
+        /** Resets all settings to the original default and applies them. */
+        function setDefaultSettings() {
+            // Set input values back to defaults
+            THEME_TOGGLE.checked = !DEFAULT_SETTINGS.isDark;
+            PRIMARY_COLOR_INPUT.value = DEFAULT_SETTINGS.primary;
+            SECONDARY_COLOR_INPUT.value = DEFAULT_SETTINGS.secondary;
+            TERTIARY_COLOR_INPUT.value = DEFAULT_SETTINGS.tertiary;
+            FONT_SIZE_SLIDER.value = DEFAULT_SETTINGS.fontSize; // Reset font size to 16
+
+            // Apply and save the default settings
+            applySettings(DEFAULT_SETTINGS);
+            saveSettings(DEFAULT_SETTINGS);
+            
+            showTemporaryMessage('Theme settings reset to default dark mode and font size!');
+            togglePanel(); // Close panel after reset
+        }
+        
+        // --- Core Functions: Notes ---
+        
+        /** Loads notes from localStorage and applies them (Module 7 specific key). */
+        function loadNotes() {
+            const notes = localStorage.getItem(NOTES_STORAGE_KEY);
+            if (NOTES_BOX && notes) {
+                NOTES_BOX.value = notes;
+            }
+        }
+
+        /** Saves current notes to localStorage (Module 7 specific key). */
+        function saveNotes() {
+            if (NOTES_BOX) {
+                localStorage.setItem(NOTES_STORAGE_KEY, NOTES_BOX.value);
+            }
+        }
+
+        // --- Core Functions: Progress ---
+
+        /** Loads progress state from localStorage and updates UI (Module 7 specific key). */
+        function loadProgress() {
+            const savedProgress = localStorage.getItem(PROGRESS_STORAGE_KEY);
+            if (savedProgress) {
+                sectionStatus = JSON.parse(savedProgress);
+            } else {
+                // Initialize all to false if nothing is saved
+                SECTION_IDS.forEach(id => sectionStatus[id] = false);
+            }
+            
+            // Update checkboxes on screen
+            SECTION_IDS.forEach(id => {
+                // Checkbox ID format is 'check-1', 'check-2', etc.
+                const index = id.split('-')[1];
+                const checkId = `check-${index}`;
+                const checkbox = document.getElementById(checkId);
+                if (checkbox) {
+                    // Use boolean coercion (!!sectionStatus[id]) to set checked state
+                    checkbox.checked = !!sectionStatus[id];
+                }
+            });
+        }
+        
+        /** Updates the progress bar percentage display. */
+        function updateProgressBar() {
+            const totalSections = SECTION_IDS.length;
+            const completedSections = SECTION_IDS.filter(id => sectionStatus[id]).length;
+            const progressPercentage = (completedSections / totalSections) * 100;
+            const fixedPercentage = progressPercentage.toFixed(0);
+            
+            if (PROGRESS_BAR && PROGRESS_PERCENTAGE_SPAN) {
+                PROGRESS_BAR.style.width = `${fixedPercentage}%`;
+                PROGRESS_PERCENTAGE_SPAN.textContent = `${fixedPercentage}%`;
+            }
+        }
+
+        /** Handles the toggle change event for a section. */
+        function toggleSectionRead(checkbox) {
+            const sectionId = checkbox.getAttribute('data-section-id');
+            const isChecked = checkbox.checked;
+            
+            sectionStatus[sectionId] = isChecked;
+            localStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify(sectionStatus));
+            updateProgressBar();
+            
+            const message = isChecked ? `Module 7: Section marked as complete! (${sectionId})` : `Module 7: Section marked as incomplete. (${sectionId})`;
+            showTemporaryMessage(message);
+        }
+        
+        // Expose to global scope for HTML inline calls (onclick/onchange)
+        window.setDefaultSettings = setDefaultSettings;
+        window.togglePanel = togglePanel;
+        window.toggleSectionRead = toggleSectionRead;
+
+
+        // --- Utility Functions ---
+
+        /** Toggles the customization panel visibility. */
+        function togglePanel() {
+            const isOpen = PANEL.classList.toggle('open');
+            MENU_ICON.classList.toggle('hidden', isOpen);
+            CLOSE_ICON.classList.toggle('hidden', !isOpen);
+        }
+        
+        // Custom Message Box function (replaces alert())
+        function showTemporaryMessage(message) {
+            let msgBox = document.getElementById('tempMessageBox');
+            if (!msgBox) {
+                msgBox = document.createElement('div');
+                msgBox.id = 'tempMessageBox';
+                // Adjusting positioning for mobile view
+                msgBox.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white p-3 rounded-lg shadow-xl z-[2000] opacity-0 transition-opacity duration-300 pointer-events-none text-sm sm:text-base';
+                document.body.appendChild(msgBox);
+            }
+            msgBox.textContent = message;
+            msgBox.style.opacity = '1';
+
+            setTimeout(() => {
+                msgBox.style.opacity = '0';
+            }, 3000);
+        }
+
+        // --- Initialization ---
+
+        window.onload = () => {
+            loadSettings();
+            loadNotes(); // Load saved notes for Module 7
+            loadProgress(); // Load saved progress for Module 7
+            updateProgressBar(); // Update bar based on loaded progress
+
+            // Attach listeners to input fields
+            PRIMARY_COLOR_INPUT.addEventListener('input', updateSettingsFromInputs);
+            SECONDARY_COLOR_INPUT.addEventListener('input', updateSettingsFromInputs);
+            TERTIARY_COLOR_INPUT.addEventListener('input', updateSettingsFromInputs);
+            FONT_SIZE_SLIDER.addEventListener('input', updateSettingsFromInputs); 
+            THEME_TOGGLE.addEventListener('change', updateSettingsFromInputs);
+            
+            // Listener for notes box saving
+            if (NOTES_BOX) {
+                NOTES_BOX.addEventListener('input', saveNotes);
+            }
+        };
+    </script>
+</body>
+</html>
