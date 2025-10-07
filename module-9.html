@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 9: Optimization and Fast Production Workflows</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Configure Tailwind -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Bebas Neue', 'sans-serif'],
+                    },
+                },
+            }
+        }
+    </script>
+    <style>
+        /* --- 1. CSS Variables for Customization --- */
+        :root {
+            /* Default Dark Mode Colors */
+            --bg-color: #0A0A1F;
+            --text-color: #E5E7EB;
+            --card-bg: #111827;
+            --border-color: #374151;
+            --primary-color: #6366F1; /* Default Indigo (Main Headings) */
+            --secondary-color: #34D399; /* Default Emerald (Exercise Headers/Accents) */
+            --tertiary-color: #A5B4FC; /* Default Light Purple (Bullet Strong Text) */
+            --highlight-color: #FBBF24; /* Yellow for specific elements like keyboard shortcuts */
+        }
+
+        /* Light Mode Overrides */
+        .light-mode {
+            --bg-color: #FFFFFF;
+            --text-color: #1F2937;
+            --card-bg: #F9FAFB;
+            --border-color: #E5E7EB;
+            --highlight-color: #94A3B8;
+        }
+
+        /* --- 2. Dynamic Styling using Variables --- */
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+            min-height: 100vh;
+        }
+
+        /* Scales the entire page content based on font size setting */
+        html {
+            font-size: 16px; /* Base size */
+        }
+
+        .header-title {
+             /* Uses CSS variables for the gradient */
+            background-image: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        /* All H2 headings use Primary Color, except the last one */
+        #section-1 h2, #section-2 h2, #section-3 h2, #section-4 h2, #section-5 h2 {
+            color: var(--primary-color);
+        }
+
+        /* Exercise and Quiz headers use secondary color */
+        #section-6 h2 {
+            color: var(--secondary-color);
+        }
+
+        /* Bullet point strong text uses the tertiary color */
+        .strong-accent {
+            color: var(--tertiary-color);
+        }
+
+        .border-primary {
+            border-color: var(--primary-color) !important;
+        }
+        
+        .bg-card {
+            background-color: var(--card-bg);
+        }
+
+        .syllabus-list li::marker {
+            color: var(--primary-color); /* Main bullet marker remains Primary */
+        }
+        
+        /* Custom list style for deeper indentation */
+        .syllabus-list li {
+            margin-bottom: 0.5rem;
+        }
+        .syllabus-list ul {
+            padding-left: 1.5em; /* Use em to scale with font size */
+            margin-top: 0.5em;
+            list-style-type: disc;
+        }
+        .syllabus-list ul ul {
+            list-style-type: circle;
+        }
+        .syllabus-list ul ul ul {
+            list-style-type: square;
+        }
+
+        /* Styling for the hands-on sections */
+        .hands-on-box {
+            border: 2px solid;
+            border-image: linear-gradient(to right, var(--primary-color), var(--secondary-color)) 1;
+            box-shadow: 0 5px 20px rgba(99, 102, 241, 0.2);
+            position: relative;
+            overflow: hidden;
+            background-color: var(--card-bg);
+            border-radius: 0.5rem;
+        }
+
+        .keyboard-shortcut {
+            color: var(--highlight-color);
+            font-weight: 600;
+        }
+
+        /* --- 3. Customization Panel Styles --- */
+        #customizationPanel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 80vw;
+            max-width: 300px;
+            height: 100%;
+            z-index: 1000;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease-in-out;
+            box-shadow: 4px 0 15px rgba(0, 0, 0, 0.5);
+            padding: 1.5rem;
+            background-color: var(--card-bg);
+            border-right: 1px solid var(--border-color);
+            color: var(--text-color);
+            overflow-y: auto;
+        }
+        #customizationPanel.open {
+            transform: translateX(0);
+        }
+
+        /* Button floating in the bottom right */
+        #menuToggleBtn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1001;
+            width: 56px;
+            height: 56px;
+            background-color: var(--primary-color);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+            transition: background-color 0.3s;
+        }
+
+        /* Slider Toggle CSS (for aesthetics) - Used for Theme only */
+        .switch .slider {
+            background-color: var(--border-color);
+        }
+        .switch input:checked + .slider {
+            background-color: var(--primary-color);
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+        input:checked + .slider:before {
+            transform: translateX(16px);
+        }
+        
+        /* Style the range input track for the font slider */
+        #fontSizeSlider::-webkit-slider-runnable-track {
+            height: 8px;
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+        #fontSizeSlider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            background: var(--primary-color);
+            cursor: pointer;
+            border-radius: 50%;
+            margin-top: -5px; 
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+        }
+        
+        /* Notes Box Styling */
+        #notesBox {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            font-size: 1rem; /* Use default browser font size, but parent elements scale */
+            line-height: 1.5;
+        }
+
+        /* --- 4. Checkbox Styling (Mark as Read) --- */
+        .section-checkbox {
+            /* Force custom styling to override native white background */
+            -webkit-appearance: none; 
+            appearance: none;
+            
+            /* Sizing and basic style */
+            height: 24px;
+            width: 24px;
+            min-width: 24px;
+            min-height: 24px;
+            
+            /* Apply dark theme colors for unchecked state */
+            border: 2px solid var(--border-color);
+            background-color: var(--card-bg); 
+            border-radius: 6px;
+            margin: 0;
+            flex-shrink: 0; 
+            cursor: pointer;
+            
+            /* Positioning for custom checkmark */
+            position: relative; 
+            display: inline-block;
+            transition: background-color 0.1s ease-in-out;
+        }
+
+        /* Checked state: use secondary color for background */
+        .section-checkbox:checked {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+        
+        /* Custom checkmark using ::after on checked state */
+        .section-checkbox:checked::after {
+            content: '';
+            position: absolute;
+            top: 4px;
+            left: 8px;
+            width: 6px;
+            height: 12px;
+            /* White checkmark for high contrast on secondary color background */
+            border: solid white;
+            border-width: 0 3px 3px 0;
+            transform: rotate(45deg);
+        }
+        
+        /* Ensure the h2 takes available space in the flex container */
+        .section-header-flex h2 {
+            flex-shrink: 1;
+            margin-right: 1rem;
+        }
+        
+    </style>
+</head>
+<body>
+
+    <!-- Customization Panel (Slides out from left) -->
+    <div id="customizationPanel">
+
+        <!-- Syllabus Overview Link -->
+        <a href="https://prayosh.github.io/Animate-Mastery-Path/home.html" 
+           class="flex items-center justify-center w-full p-3 mb-6 font-semibold rounded-lg transition duration-200 shadow-lg hover:shadow-xl" 
+           style="background-color: var(--primary-color); color: var(--card-bg);">
+            <!-- Syllabus Icon (Document with Lines) -->
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            Syllabus Overview
+        </a>
+        <!-- END Syllabus Overview Link -->
+
+        <!-- Theme Settings Heading -->
+        <h2 class="text-2xl font-bold mb-4 border-b pb-2" style="color: var(--primary-color); border-bottom-color: var(--border-color);">Theme Settings</h2>
+
+        <!-- Theme Toggle -->
+        <div class="mb-6">
+            <label class="block text-sm font-medium mb-2" style="color: var(--secondary-color);">Theme Mode</label>
+            <div class="flex items-center space-x-4 p-2 rounded-lg" style="background-color: var(--border-color);">
+                <span class="text-sm">Dark</span>
+                <label class="switch relative inline-block w-10 h-6">
+                    <input type="checkbox" id="themeToggle" class="opacity-0 w-0 h-0">
+                    <span class="slider absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full transition-all duration-300"></span>
+                </label>
+                <span class="text-sm">Light</span>
+            </div>
+        </div>
+
+        <!-- Primary Color Picker -->
+        <div class="mb-6">
+            <label for="primaryColor" class="block text-sm font-medium mb-2" style="color: var(--secondary-color);">Primary Colour (Main Headings)</label>
+            <input type="color" id="primaryColor" value="#6366F1" class="w-full h-10 border-none rounded-lg p-0 cursor-pointer">
+        </div>
+
+        <!-- Secondary Color Picker -->
+        <div class="mb-6">
+            <label for="secondaryColor" class="block text-sm font-medium mb-2" style="color: var(--secondary-color);">Secondary Colour (Exercise Headers)</label>
+            <input type="color" id="secondaryColor" value="#34D399" class="w-full h-10 border-none rounded-lg p-0 cursor-pointer">
+        </div>
+
+        <!-- Tertiary Color Picker -->
+        <div class="mb-8">
+            <label for="tertiaryColor" class="block text-sm font-medium mb-2" style="color: var(--secondary-color);">Accent Text Colour (List Items)</label>
+            <input type="color" id="tertiaryColor" value="#A5B4FC" class="w-full h-10 border-none rounded-lg p-0 cursor-pointer">
+        </div>
+        
+        <!-- Font Size Slider -->
+        <div class="mb-8">
+            <label for="fontSizeSlider" class="block text-sm font-medium mb-3" style="color: var(--secondary-color);">Text Font Size</label>
+            <input type="range" id="fontSizeSlider" min="14" max="20" step="1" value="16" class="w-full h-2 rounded-lg appearance-none cursor-pointer">
+            <div class="flex justify-between text-xs mt-1 text-gray-400">
+                <span>Small (14px)</span>
+                <span>Large (20px)</span>
+            </div>
+        </div>
+
+
+        <!-- Reset Button -->
+        <button onclick="setDefaultSettings()" class="w-full px-4 py-2 font-semibold rounded-lg transition duration-200" style="background-color: var(--primary-color); color: var(--card-bg);">
+            Reset to Default Theme
+        </button>
+    </div>
+
+    <!-- Menu Toggle Button (Bottom Right) -->
+    <button id="menuToggleBtn" onclick="togglePanel()" class="fixed bottom-5 right-5 w-14 h-14 rounded-full flex items-center justify-center text-white shadow-xl transition-all duration-300 hover:scale-110">
+        <svg id="menuIcon" class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        <svg id="closeIcon" class="w-7 h-7 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+    </button>
+
+    <!-- Main Content Container -->
+    <div class="max-w-4xl mx-auto pb-16">
+
+        <!-- Header -->
+        <header class="text-center py-6 mb-8 border-b" style="border-bottom-color: var(--primary-color);">
+            <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight font-display header-title">
+                Module 9: Optimization and Fast Production Workflows
+            </h1>
+            <p class="mt-2 text-xl italic font-medium" style="color: var(--secondary-color);">
+                (Advanced)
+            </p>
+        </header>
+
+        <!-- Progress Bar Container -->
+        <div class="mb-8 p-3 rounded-lg bg-card border border-border-color">
+            <div class="flex justify-between items-center mb-1 text-sm font-medium">
+                <span>Progress</span>
+                <span id="progressPercentage">0%</span>
+            </div>
+            <div id="progressBarContainer" class="w-full h-3 rounded-full overflow-hidden" style="background-color: var(--border-color);">
+                <div id="progressBar" class="h-full transition-all duration-500" style="background-color: var(--secondary-color); width: 0%;"></div>
+            </div>
+        </div>
+
+        <!-- Focus Text -->
+        <div class="mb-8 p-4 rounded-lg border border-border-color bg-card">
+            <p class="text-lg leading-relaxed">
+                <strong class="strong-accent">Focus:</strong> Speeding up production to create professional animations efficiently for cartoons, movies, series, and marketing ads. This module focuses on optimizing workflows to reduce creation time, streamline processes, and ensure high-quality outputs under production constraints. You’ll learn advanced techniques for accelerating animation tasks, managing assets for scalability, and integrating with other tools for collaborative workflows. Additional concepts like asset batching, performance testing, and advanced troubleshooting are included to support professional-grade production. Multiple hands-on exercises emphasize practical application, ensuring you can produce animations faster while maintaining quality, preparing you for the capstone projects in Module 10.
+            </p>
+            <p class="text-lg leading-relaxed mt-4">
+                <strong class="strong-accent">Learning Objectives:</strong>
+            </p>
+            <ul class="list-disc ml-6 mt-2 space-y-1 text-gray-400">
+                <li>Accelerate animation creation using shortcuts, libraries, and efficient techniques.</li>
+                <li>Optimize animations for performance (e.g., reduced file size, smooth playback) across platforms.</li>
+                <li>Scale workflows for team collaboration using formats like XFL and tool integrations.</li>
+                <li>Track and improve production speed through time-tracking and iterative refinement.</li>
+                <li>Troubleshoot advanced optimization issues to ensure reliable outputs.</li>
+                <li>Build practical experience through exercises simulating high-pressure production scenarios.</li>
+            </ul>
+        </div>
+
+
+        <!-- Syllabus Content -->
+        <div class="syllabus-list space-y-8">
+            
+            <!-- 1. Accelerators -->
+            <section id="section-1">
+                <div class="section-header-flex flex justify-between items-center border-b-2 border-primary/40 pb-2">
+                    <h2 class="text-3xl font-bold">Accelerators:</h2>
+                    <div class="flex items-center space-x-2">
+                        <label for="check-1" class="text-sm font-medium text-gray-400 hidden sm:inline cursor-pointer">Mark Read</label>
+                        <input type="checkbox" id="check-1" data-section-id="section-1" onchange="toggleSectionRead(this)" class="section-checkbox cursor-pointer">
+                    </div>
+                </div>
+                <ul class="ml-4 space-y-3 pt-4">
+                    <li>
+                        <strong class="strong-accent">Keyboard Shortcuts:</strong>
+                        <ul class="list-disc ml-4">
+                            <li><strong>Core Shortcuts:</strong> Mastering essential shortcuts (e.g., <code class="keyboard-shortcut">Ctrl+S</code> save, <code class="keyboard-shortcut">F6</code> keyframe, <code class="keyboard-shortcut">Ctrl+Enter</code> Test Movie, <code class="keyboard-shortcut">Q</code> Free Transform, <code class="keyboard-shortcut">V</code> Selection, <code class="keyboard-shortcut">M</code> Bone Tool, <code class="keyboard-shortcut">Ctrl+R</code> Import) to minimize mouse usage.</li>
+                            <li><strong>Custom Shortcuts:</strong> Creating custom shortcuts (<code class="keyboard-shortcut">Edit > Keyboard Shortcuts</code>) for frequent tasks (e.g., assign key for Library access).</li>
+                            <li><strong>Workflow Integration:</strong> Using shortcuts in sequence (e.g., <code class="keyboard-shortcut">F6 > Q > drag</code> for quick keyframe transforms) for rapid editing.</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Library Management:</strong>
+                        <ul class="list-disc ml-4">
+                            <li><strong>Asset Libraries:</strong> Organizing symbols into folders (e.g., “Characters”, “Props”, “Backgrounds”), using consistent naming (e.g., “sym\_Char1\_Head”).</li>
+                            <li><strong>Shared Libraries:</strong> Creating shared Library files (<code class="keyboard-shortcut">File > Import > Open External Library</code>) for team access, linking assets across multiple .fla files.</li>
+                            <li><strong>Reusable Clips:</strong> Storing animations (e.g., walk cycles, effects) as Movie Clips in Library for drag-and-drop reuse in multiple scenes.</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Fast Techniques:</strong>
+                        <ul class="list-disc ml-4">
+                            <li><strong>Tween Layering:</strong> Stacking multiple tweens on separate layers (e.g., position tween on one layer, rotation on another) for complex motions without manual keyframing.</li>
+                            <li><strong>Motion Presets:</strong> Applying built-in presets (<code class="keyboard-shortcut">Window > Motion Presets</code>, e.g., Bounce, Pulse), customizing for specific needs, saving custom presets for reuse.</li>
+                            <li><strong>Batch Editing:</strong> Copy/pasting keyframes (right-click > Copy/Paste Frames) across layers/scenes, batch-converting assets to symbols (select multiple, <code class="keyboard-shortcut">F8</code>).</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Additional Concepts:</strong>
+                        <ul class="list-disc ml-4">
+                            <li><strong>Template Usage:</strong> Starting projects with pre-built templates (<code class="keyboard-shortcut">File > New > Templates > Animation</code>) for common setups (e.g., cartoon scene, ad banner).</li>
+                            <li><strong>Symbol Duplication:</strong> Duplicating symbols (<code class="keyboard-shortcut">Ctrl+D</code> in Library) for quick variations (e.g., same rig, different colors), editing instances for unique tweaks.</li>
+                            <li><strong>Auto-Recovery Setup:</strong> Enabling frequent auto-saves (<code class="keyboard-shortcut">Edit > Preferences > General</code>, set to 2-5 minutes) to minimize rework after crashes.</li>
+                        </ul>
+                    </li>
+                </ul>
+            </section>
+
+            <!-- 2. Scaling -->
+            <section id="section-2">
+                <div class="section-header-flex flex justify-between items-center border-b-2 border-primary/40 pb-2 mt-8">
+                    <h2 class="text-3xl font-bold">Scaling:</h2>
+                    <div class="flex items-center space-x-2">
+                        <label for="check-2" class="text-sm font-medium text-gray-400 hidden sm:inline cursor-pointer">Mark Read</label>
+                        <input type="checkbox" id="check-2" data-section-id="section-2" onchange="toggleSectionRead(this)" class="section-checkbox cursor-pointer">
+                    </div>
+                </div>
+                <ul class="ml-4 space-y-3 pt-4">
+                    <li>
+                        <strong class="strong-accent">Team Formats (XFL):</strong>
+                        <ul class="list-disc ml-4">
+                            <li><strong>Concept:</strong> Using XFL (uncompressed .fla format) for team collaboration, storing assets as separate files for version control and multi-user edits.</li>
+                            <li><strong>Setup:</strong> Saving as XFL (<code class="keyboard-shortcut">File > Save As > Flash CS5 Uncompressed Document</code>), organizing folder structure (e.g., Library folder for symbols, XML for timeline data).</li>
+                            <li><strong>Collaboration:</strong> Sharing XFL folders via cloud (e.g., Google Drive, Dropbox), merging changes by updating Library or XML files, avoiding conflicts with clear naming (e.g., “Scene1\_v2.xfl”).</li>
+                            <li><strong>Conversion:</strong> Converting XFL back to .fla for final export (<code class="keyboard-shortcut">File > Save As > Flash Document</code>).</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Tool Integrations:</strong>
+                        <ul class="list-disc ml-4">
+                            <li><strong>Adobe Ecosystem:</strong> Importing PSD/AI files from Photoshop/Illustrator (<code class="keyboard-shortcut">File > Import</code>, preserve layers), exporting to After Effects (<code class="keyboard-shortcut">OAM export, File > Export > Export Animated OAM</code>) for compositing, or Premiere Pro for video editing (MP4 export).</li>
+                            <li><strong>External Tools:</strong> Using Audacity for audio compression before import, optimizing images in Photoshop (e.g., reduce PNG size), syncing with version control tools (e.g., Git for XFL folders).</li>
+                            <li><strong>HTML5 Workflow:</strong> Setting up HTML5 Canvas documents for web ads, testing in browsers (<code class="keyboard-shortcut">File > Publish</code>), ensuring compatibility with ad platforms (e.g., Google Ads).</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Additional Concepts:</strong>
+                        <ul class="list-disc ml-4">
+                            <li><strong>Asset Sharing:</strong> Using Creative Cloud Libraries (<code class="keyboard-shortcut">Window > CC Libraries</code>) for team-shared assets (e.g., character rigs, backgrounds), syncing across Adobe apps.</li>
+                            <li><strong>Batch Exports:</strong> Exporting multiple scenes as PNG sequences or videos (<code class="keyboard-shortcut">File > Export > Export Video/Media</code>) for team review or post-production.</li>
+                            <li><strong>Scalability Planning:</strong> Structuring projects for expansion (e.g., modular scenes for series episodes, reusable rigs for multiple ads).</li>
+                        </ul>
+                    </li>
+                </ul>
+            </section>
+
+            <!-- 3. Optimization Techniques -->
+            <section id="section-3">
+                <div class="section-header-flex flex justify-between items-center border-b-2 border-primary/40 pb-2 mt-8">
+                    <h2 class="text-3xl font-bold">Optimization Techniques:</h2>
+                    <div class="flex items-center space-x-2">
+                        <label for="check-3" class="text-sm font-medium text-gray-400 hidden sm:inline cursor-pointer">Mark Read</label>
+                        <input type="checkbox" id="check-3" data-section-id="section-3" onchange="toggleSectionRead(this)" class="section-checkbox cursor-pointer">
+                    </div>
+                </div>
+                <ul class="ml-4 space-y-3 pt-4">
+                    <li>
+                        <strong class="strong-accent">File Size Reduction:</strong>
+                        <ul class="list-disc ml-4">
+                            <li><strong>Vector Simplification:</strong> Using <code class="keyboard-shortcut">Modify > Shape > Optimize</code> to reduce anchor points, converting complex bitmaps to vectors via <code class="keyboard-shortcut">Trace Bitmap</code> (low detail settings).</li>
+                            <li><strong>Asset Cleanup:</strong> Deleting unused Library items (<code class="keyboard-shortcut">Library > Select Unused Items > Delete</code>), merging duplicate symbols.</li>
+                            <li><strong>Compression:</strong> Reducing audio bitrate (e.g., 64 kbps for web) in external tools, using PNG over JPEG for transparency in imports.</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Performance Optimization:</strong>
+                        <ul class="list-disc ml-4">
+                            <li><strong>Filter Reduction:</strong> Limiting filters (e.g., one glow vs. multiple) to maintain frame rate (target 24-30 fps), testing with <code class="keyboard-shortcut">Bandwidth Profiler (Ctrl+Enter > View > Bandwidth Profiler)</code>.</li>
+                            <li><strong>Symbol Efficiency:</strong> Using Movie Clips for complex animations (lighter than frame-by-frame), caching as bitmap (<code class="keyboard-shortcut">Properties > Display > Cache as Bitmap</code>) for faster rendering.</li>
+                            <li><strong>Scene Streamlining:</strong> Reducing layer count by combining static elements, minimizing tween spans for short ads.</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Additional Concepts:</strong>
+                        <ul class="list-disc ml-4">
+                            <li><strong>Platform-Specific Optimization:</strong> Adjusting settings for target outputs (e.g., HTML5 for ads <150KB, MP4 for high-res videos), checking <code class="keyboard-shortcut">Publish Settings (File > Publish Settings)</code>.</li>
+                            <li><strong>Render Testing:</strong> Using low-quality preview (<code class="keyboard-shortcut">View > Preview Mode > Fast</code>) during editing, full render (<code class="keyboard-shortcut">Ctrl+Enter</code>) for final checks.</li>
+                            <li><strong>Incremental Saves:</strong> Saving versions (e.g., “Project\_v1.fla”, “Project\_v2.fla”) to track optimization progress.</li>
+                        </ul>
+                    </li>
+                </ul>
+            </section>
+
+            <!-- 4. Troubleshooting for Advanced Users -->
+            <section id="section-4">
+                <div class="section-header-flex flex justify-between items-center border-b-2 border-primary/40 pb-2 mt-8">
+                    <h2 class="text-3xl font-bold">Troubleshooting for Advanced Users:</h2>
+                    <div class="flex items-center space-x-2">
+                        <label for="check-4" class="text-sm font-medium text-gray-400 hidden sm:inline cursor-pointer">Mark Read</label>
+                        <input type="checkbox" id="check-4" data-section-id="section-4" onchange="toggleSectionRead(this)" class="section-checkbox cursor-pointer">
+                    </div>
+                </div>
+                <ul class="ml-4 space-y-3 pt-4">
+                    <li>
+                        <strong class="strong-accent">Common Errors:</strong>
+                        <ul class="list-disc ml-4">
+                            <li><strong>Slow Performance:</strong> Too many vectors/filters (simplify shapes, reduce effects), or large audio files (compress externally).</li>
+                            <li><strong>XFL Conflicts:</strong> Asset mismatches in team projects (verify Library linkages), or corrupted XML (revert to backup XFL folder).</li>
+                            <li><strong>Export Issues:</strong> Missing assets in output (check <code class="keyboard-shortcut">Publish Settings > Include Hidden Layers</code>), or HTML5 errors (test in browser, check JavaScript console).</li>
+                            <li><strong>Tween Errors:</strong> Broken tweens after import (reapply in new timeline), or misaligned keyframes (check frame gaps).</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Solutions:</strong>
+                        <ul class="list-disc ml-4">
+                            <li>Test small segments (e.g., one scene), use <code class="keyboard-shortcut">Output panel (Window > Output)</code> for error logs, optimize assets before import, consult Adobe forums for “XFL errors” or “HTML5 export issues.”</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Additional Concepts:</strong>
+                        <ul class="list-disc ml-4">
+                            <li>Backing up Libraries separately (<code class="keyboard-shortcut">Export Library as .fla</code>), using diagnostic tools (e.g., Bandwidth Profiler) for performance bottlenecks.</li>
+                        </ul>
+                    </li>
+                </ul>
+            </section>
+            
+            <!-- 5. Efficiency Tips -->
+            <section id="section-5">
+                <div class="section-header-flex flex justify-between items-center border-b-2 border-primary/40 pb-2 mt-8">
+                    <h2 class="text-3xl font-bold">Efficiency Tips:</h2>
+                    <div class="flex items-center space-x-2">
+                        <label for="check-5" class="text-sm font-medium text-gray-400 hidden sm:inline cursor-pointer">Mark Read</label>
+                        <input type="checkbox" id="check-5" data-section-id="section-5" onchange="toggleSectionRead(this)" class="section-checkbox cursor-pointer">
+                    </div>
+                </div>
+                <ul class="ml-4 space-y-3 pt-4">
+                    <li>
+                        <strong class="strong-accent">Time-Tracking:</strong> Log time spent on tasks (e.g., rigging, tweening) using a timer app (e.g., Toggl), aim to reduce by 20-30% with practice, analyze logs to identify slow steps.
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Batch Processing:</strong> Apply effects/tweens to multiple symbols (Copy/Paste Properties), import multiple assets at once (<code class="keyboard-shortcut">Ctrl+R > select multiple files</code>).
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Shortcuts Mastery:</strong> Expand shortcut use (e.g., <code class="keyboard-shortcut">Ctrl+Shift+S</code> for Scenes, <code class="keyboard-shortcut">Ctrl+L</code> for Library, <code class="keyboard-shortcut">F5</code> for frame extension).
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Workflow:</strong> Plan asset optimization before animation (e.g., pre-simplify vectors), reuse templates for recurring setups (e.g., ad layouts), test exports early to catch issues.
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Automation:</strong> Use basic ActionScript (e.g., <code class="keyboard-shortcut">stop();</code> for scene pauses) or extensions (e.g., Animate’s JSFL scripts) for repetitive tasks, if available.
+                    </li>
+                </ul>
+            </section>
+
+            <!-- 6. Hands-On Exercises & Quiz -->
+            <section id="section-6" class="mt-12">
+                <div class="section-header-flex flex justify-between items-center border-b-2 pb-2 mb-6" style="border-bottom-color: var(--secondary-color);">
+                    <h2 class="text-3xl font-bold" style="color: var(--secondary-color);">Hands-On Exercises & Self-Assessment:</h2>
+                    <div class="flex items-center space-x-2">
+                        <label for="check-6" class="text-sm font-medium text-gray-400 hidden sm:inline cursor-pointer">Mark Read</label>
+                        <input type="checkbox" id="check-6" data-section-id="section-6" onchange="toggleSectionRead(this)" class="section-checkbox cursor-pointer">
+                    </div>
+                </div>
+
+                <!-- Hands-On Exercises -->
+                <h3 class="text-2xl font-semibold mb-4 border-b pb-2" style="color: var(--primary-color); border-bottom-color: var(--border-color);">Practice for Reinforcement:</h3>
+                <div class="space-y-6">
+                    <div class="hands-on-box p-6">
+                        <h4 class="text-xl font-semibold mb-2" style="color: var(--secondary-color);">Exercise 1: Shortcut and Library Efficiency (Time: 15-20 minutes)</h4>
+                        <ul class="list-disc ml-4 text-gray-400 space-y-1">
+                            <li>Create a new document (1280x720, 24 fps), import 5 assets (e.g., character, prop, backgrounds), organize into Library folders, use shortcuts (<code class="keyboard-shortcut">Ctrl+R, F8, Ctrl+L</code>) to convert to symbols and place on layers, time the process, save as “LibrarySetup.fla”.</li>
+                        </ul>
+                    </div>
+                    <div class="hands-on-box p-6">
+                        <h4 class="text-xl font-semibold mb-2" style="color: var(--secondary-color);">Exercise 2: Tween Layering (Time: 15-20 minutes)</h4>
+                        <ul class="list-disc ml-4 text-gray-400 space-y-1">
+                            <li>Animate a character’s arm swing (12 frames) with layered tweens (position on one layer, rotation on another), apply a Motion Preset (e.g., Swing), duplicate for second arm, time the process, save as “TweenLayer.fla”.</li>
+                        </ul>
+                    </div>
+                    <div class="hands-on-box p-6">
+                        <h4 class="text-xl font-semibold mb-2" style="color: var(--secondary-color);">Exercise 3: XFL and Team Workflow (Time: 20-25 minutes)</h4>
+                        <ul class="list-disc ml-4 text-gray-400 space-y-1">
+                            <li>Save a multi-scene project (from Module 7) as XFL, open in another instance of Animate, edit one scene (e.g., add prop), merge back, test continuity, save as “XFLTest.fla”.</li>
+                        </ul>
+                    </div>
+                    <div class="hands-on-box p-6">
+                        <h4 class="text-xl font-semibold mb-2" style="color: var(--secondary-color);">Exercise 4: Optimization Drill (Time: 20-25 minutes)</h4>
+                        <ul class="list-disc ml-4 text-gray-400 space-y-1">
+                            <li>Take a scene with heavy assets (e.g., high-res background, multiple filters), reduce file size (<code class="keyboard-shortcut">Trace Bitmap</code> on background, remove one filter), test performance (<code class="keyboard-shortcut">Bandwidth Profiler</code>), compare render time before/after, save as “OptimizedScene.fla”.</li>
+                        </ul>
+                    </div>
+                    <div class="hands-on-box p-6">
+                        <h4 class="text-xl font-semibold mb-2" style="color: var(--secondary-color);">Project Extension: Full Optimized Animation (Time: 30-40 minutes)</h4>
+                        <ul class="list-disc ml-4 text-gray-400 space-y-1">
+                            <li>Take a full scene (e.g., Module 6/7, character with prop and background), optimize (simplify vectors, reduce filters, compress audio), recreate same scene using accelerators (templates, layered tweens, Library reuse), time both processes, aim for 30% faster recreation, export as MP4, save as “FastProduction.fla”.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Self-Assessment Quiz -->
+                <div class="p-6 rounded-xl mt-8 border border-border-color bg-card">
+                    <h3 class="text-2xl font-bold mb-4" style="color: var(--primary-color);">Self-Assessment Quiz:</h3>
+                    <ul class="list-disc ml-4 space-y-3 text-gray-300">
+                        <li>Name three shortcuts for faster workflows. (<strong class="strong-accent">Answer: E.g., Ctrl+R import, F6 keyframe, Ctrl+Enter Test Movie.</strong>)</li>
+                        <li>What is XFL and its benefit? (<strong class="strong-accent">Answer: Uncompressed .fla format, enables team collaboration via folder-based assets.</strong>)</li>
+                        <li>How do you reduce file size? (<strong class="strong-accent">Answer: Simplify vectors, remove unused assets, compress audio.</strong>)</li>
+                        <li>Describe tween layering. (<strong class="strong-accent">Answer: Stacking tweens on separate layers for complex motion, e.g., position + rotation.</strong>)</li>
+                        <li>Fix a slow animation issue. (<strong class="strong-accent">Answer: Reduce filters, cache symbols as bitmap, simplify vectors.</strong>)</li>
+                        <li>How does time-tracking improve efficiency? (<strong class="strong-accent">Answer: Identifies slow tasks, sets goals for speed improvement.</strong>)</li>
+                    </ul>
+                    <p class="text-gray-400 mt-4 italic">
+                        This expanded module equips you with advanced optimization and workflow acceleration techniques, ensuring efficient production for professional animations. Multiple exercises build practical mastery, preparing you for capstone projects in Module 10. Complete all before advancing.
+                    </p>
+                </div>
+            </section>
+        </div>
+
+        <!-- Notes Section -->
+        <section class="mt-16">
+            <h2 class="text-3xl font-bold border-b-2 pb-2 mb-4" style="color: var(--primary-color); border-bottom-color: var(--border-color);">My Personal Notes</h2>
+            <p class="text-sm text-gray-400 mb-3">These notes are saved automatically in your browser for Module 9.</p>
+            <textarea id="notesBox" rows="10" placeholder="Type your notes, reminders, or specific difficulties here..." class="w-full p-4 rounded-lg focus:outline-none focus:ring-2" style="focus-ring-color: var(--primary-color);"></textarea>
+        </section>
+
+        <!-- Final Instruction -->
+        <p class="mt-12 text-center text-lg italic text-gray-400">
+            You've mastered the professional workflow! Prepare for the final Capstone Project in Module 10.
+        </p>
+
+    </div>
+
+    <!-- JavaScript for Theme, Color, Font, Progress Control, and Notes -->
+    <script>
+        const PANEL_ID = 'customizationPanel';
+        const BODY = document.body;
+        const PANEL = document.getElementById(PANEL_ID);
+        const MENU_TOGGLE_BTN = document.getElementById('menuToggleBtn');
+        const PRIMARY_COLOR_INPUT = document.getElementById('primaryColor');
+        const SECONDARY_COLOR_INPUT = document.getElementById('secondaryColor');
+        const TERTIARY_COLOR_INPUT = document.getElementById('tertiaryColor');
+        const FONT_SIZE_SLIDER = document.getElementById('fontSizeSlider');
+        const THEME_TOGGLE = document.getElementById('themeToggle');
+        const NOTES_BOX = document.getElementById('notesBox');
+        const MENU_ICON = document.getElementById('menuIcon');
+        const CLOSE_ICON = document.getElementById('closeIcon');
+
+        // Progress elements
+        const PROGRESS_BAR = document.getElementById('progressBar');
+        const PROGRESS_PERCENTAGE_SPAN = document.getElementById('progressPercentage');
+        
+        // --- Storage keys (Unique for Module 9) ---
+        const PROGRESS_STORAGE_KEY = 'module9Progress'; 
+        const NOTES_STORAGE_KEY = 'module9Notes'; 
+        const THEME_STORAGE_KEY = 'themeSettings'; // Shared key for global theme
+        
+        // All section IDs for this module (6 sections: 1.Accelerators, 2.Scaling, 3.Optimization, 4.Troubleshooting, 5.Efficiency Tips, 6.Hands-On/Quiz)
+        const SECTION_IDS = [
+            'section-1', 'section-2', 'section-3', 'section-4',
+            'section-5', 'section-6'
+        ];
+        
+        let sectionStatus = {}; 
+
+        const DEFAULT_SETTINGS = {
+            isDark: true,
+            primary: '#6366F1', // Indigo
+            secondary: '#34D399', // Emerald
+            tertiary: '#A5B4FC', // Light Purple
+            fontSize: 16, // Default base size in pixels
+        };
+
+        // --- Core Functions: Settings ---
+
+        /** Loads settings from localStorage and applies them. */
+        function loadSettings() {
+            // Theme settings are shared across modules for consistency
+            const savedSettings = JSON.parse(localStorage.getItem(THEME_STORAGE_KEY));
+            let currentSettings;
+
+            if (savedSettings) {
+                currentSettings = { ...DEFAULT_SETTINGS, ...savedSettings };
+            } else {
+                currentSettings = DEFAULT_SETTINGS;
+            }
+            
+            // Set input values to current state
+            THEME_TOGGLE.checked = !currentSettings.isDark;
+            PRIMARY_COLOR_INPUT.value = currentSettings.primary;
+            SECONDARY_COLOR_INPUT.value = currentSettings.secondary;
+            TERTIARY_COLOR_INPUT.value = currentSettings.tertiary;
+            FONT_SIZE_SLIDER.value = currentSettings.fontSize;
+
+            applySettings(currentSettings);
+        }
+
+        /** Saves current settings to localStorage. */
+        function saveSettings(settings) {
+            localStorage.setItem(THEME_STORAGE_KEY, JSON.stringify(settings));
+        }
+
+        /** Applies the theme, colors, and font size to the document. */
+        function applySettings(settings) {
+            const root = document.documentElement;
+
+            // Apply Theme Mode
+            if (settings.isDark) {
+                BODY.classList.remove('light-mode');
+                root.style.setProperty('--bg-color', '#0A0A1F');
+                root.style.setProperty('--text-color', '#E5E7EB');
+                root.style.setProperty('--card-bg', '#111827');
+                root.style.setProperty('--border-color', '#374151');
+                root.style.setProperty('--highlight-color', '#FBBF24');
+            } else {
+                BODY.classList.add('light-mode');
+                root.style.setProperty('--bg-color', '#FFFFFF');
+                root.style.setProperty('--text-color', '#1F2937');
+                root.style.setProperty('--card-bg', '#F9FAFB');
+                root.style.setProperty('--border-color', '#E5E7EB');
+                root.style.setProperty('--highlight-color', '#94A3B8');
+            }
+
+            // Apply custom colors
+            root.style.setProperty('--primary-color', settings.primary);
+            root.style.setProperty('--secondary-color', settings.secondary);
+            root.style.setProperty('--tertiary-color', settings.tertiary);
+
+            // Applying font size to the HTML root element (document.documentElement)
+            root.style.fontSize = `${settings.fontSize}px`;
+
+            // Update floating button background
+            MENU_TOGGLE_BTN.style.backgroundColor = settings.primary;
+        }
+
+        /** Updates and saves settings based on current input values. */
+        function updateSettingsFromInputs() {
+            const settings = {
+                isDark: !THEME_TOGGLE.checked,
+                primary: PRIMARY_COLOR_INPUT.value,
+                secondary: SECONDARY_COLOR_INPUT.value,
+                tertiary: TERTIARY_COLOR_INPUT.value,
+                fontSize: parseInt(FONT_SIZE_SLIDER.value),
+            };
+            applySettings(settings);
+            saveSettings(settings);
+        }
+
+        /** Resets all settings to the original default and applies them. */
+        function setDefaultSettings() {
+            // Set input values back to defaults
+            THEME_TOGGLE.checked = !DEFAULT_SETTINGS.isDark;
+            PRIMARY_COLOR_INPUT.value = DEFAULT_SETTINGS.primary;
+            SECONDARY_COLOR_INPUT.value = DEFAULT_SETTINGS.secondary;
+            TERTIARY_COLOR_INPUT.value = DEFAULT_SETTINGS.tertiary;
+            FONT_SIZE_SLIDER.value = DEFAULT_SETTINGS.fontSize; // Reset font size to 16
+
+            // Apply and save the default settings
+            applySettings(DEFAULT_SETTINGS);
+            saveSettings(DEFAULT_SETTINGS);
+            
+            showTemporaryMessage('Theme settings reset to default dark mode and font size!');
+            togglePanel(); // Close panel after reset
+        }
+        
+        // --- Core Functions: Notes ---
+        
+        /** Loads notes from localStorage and applies them (Module 9 specific key). */
+        function loadNotes() {
+            const notes = localStorage.getItem(NOTES_STORAGE_KEY);
+            if (NOTES_BOX && notes) {
+                NOTES_BOX.value = notes;
+            }
+        }
+
+        /** Saves current notes to localStorage (Module 9 specific key). */
+        function saveNotes() {
+            if (NOTES_BOX) {
+                localStorage.setItem(NOTES_STORAGE_KEY, NOTES_BOX.value);
+            }
+        }
+
+        // --- Core Functions: Progress ---
+
+        /** Loads progress state from localStorage and updates UI (Module 9 specific key). */
+        function loadProgress() {
+            const savedProgress = localStorage.getItem(PROGRESS_STORAGE_KEY);
+            if (savedProgress) {
+                sectionStatus = JSON.parse(savedProgress);
+            } else {
+                // Initialize all to false if nothing is saved
+                SECTION_IDS.forEach(id => sectionStatus[id] = false);
+            }
+            
+            // Update checkboxes on screen
+            SECTION_IDS.forEach(id => {
+                // Checkbox ID format is 'check-1', 'check-2', etc.
+                const index = id.split('-')[1];
+                const checkId = `check-${index}`;
+                const checkbox = document.getElementById(checkId);
+                if (checkbox) {
+                    // Use boolean coercion (!!sectionStatus[id]) to set checked state
+                    checkbox.checked = !!sectionStatus[id];
+                }
+            });
+        }
+        
+        /** Updates the progress bar percentage display. */
+        function updateProgressBar() {
+            const totalSections = SECTION_IDS.length;
+            const completedSections = SECTION_IDS.filter(id => sectionStatus[id]).length;
+            const progressPercentage = (completedSections / totalSections) * 100;
+            const fixedPercentage = progressPercentage.toFixed(0);
+            
+            if (PROGRESS_BAR && PROGRESS_PERCENTAGE_SPAN) {
+                PROGRESS_BAR.style.width = `${fixedPercentage}%`;
+                PROGRESS_PERCENTAGE_SPAN.textContent = `${fixedPercentage}%`;
+            }
+        }
+
+        /** Handles the toggle change event for a section. */
+        function toggleSectionRead(checkbox) {
+            const sectionId = checkbox.getAttribute('data-section-id');
+            const isChecked = checkbox.checked;
+            
+            sectionStatus[sectionId] = isChecked;
+            localStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify(sectionStatus));
+            updateProgressBar();
+            
+            const message = isChecked ? `Module 9: Section marked as complete! (${sectionId})` : `Module 9: Section marked as incomplete. (${sectionId})`;
+            showTemporaryMessage(message);
+        }
+        
+        // Expose to global scope for HTML inline calls (onclick/onchange)
+        window.setDefaultSettings = setDefaultSettings;
+        window.togglePanel = togglePanel;
+        window.toggleSectionRead = toggleSectionRead;
+
+
+        // --- Utility Functions ---
+
+        /** Toggles the customization panel visibility. */
+        function togglePanel() {
+            const isOpen = PANEL.classList.toggle('open');
+            MENU_ICON.classList.toggle('hidden', isOpen);
+            CLOSE_ICON.classList.toggle('hidden', !isOpen);
+        }
+        
+        // Custom Message Box function (replaces alert())
+        function showTemporaryMessage(message) {
+            let msgBox = document.getElementById('tempMessageBox');
+            if (!msgBox) {
+                msgBox = document.createElement('div');
+                msgBox.id = 'tempMessageBox';
+                // Adjusting positioning for mobile view
+                msgBox.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white p-3 rounded-lg shadow-xl z-[2000] opacity-0 transition-opacity duration-300 pointer-events-none text-sm sm:text-base';
+                document.body.appendChild(msgBox);
+            }
+            msgBox.textContent = message;
+            msgBox.style.opacity = '1';
+
+            setTimeout(() => {
+                msgBox.style.opacity = '0';
+            }, 3000);
+        }
+
+        // --- Initialization ---
+
+        window.onload = () => {
+            loadSettings();
+            loadNotes(); // Load saved notes for Module 9
+            loadProgress(); // Load saved progress for Module 9
+            updateProgressBar(); // Update bar based on loaded progress
+
+            // Attach listeners to input fields
+            PRIMARY_COLOR_INPUT.addEventListener('input', updateSettingsFromInputs);
+            SECONDARY_COLOR_INPUT.addEventListener('input', updateSettingsFromInputs);
+            TERTIARY_COLOR_INPUT.addEventListener('input', updateSettingsFromInputs);
+            FONT_SIZE_SLIDER.addEventListener('input', updateSettingsFromInputs); 
+            THEME_TOGGLE.addEventListener('change', updateSettingsFromInputs);
+            
+            // Listener for notes box saving
+            if (NOTES_BOX) {
+                NOTES_BOX.addEventListener('input', saveNotes);
+            }
+        };
+    </script>
+</body>
+</html>
