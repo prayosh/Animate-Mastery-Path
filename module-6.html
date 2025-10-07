@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 6: Backgrounds, Composition, and Scene Building</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Configure Tailwind -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Bebas Neue', 'sans-serif'],
+                    },
+                },
+            }
+        }
+    </script>
+    <style>
+        /* --- 1. CSS Variables for Customization --- */
+        :root {
+            /* Default Dark Mode Colors */
+            --bg-color: #0A0A1F;
+            --text-color: #E5E7EB;
+            --card-bg: #111827;
+            --border-color: #374151;
+            --primary-color: #6366F1; /* Default Indigo (Main Headings) */
+            --secondary-color: #34D399; /* Default Emerald (Exercise Headers/Accents) */
+            --tertiary-color: #A5B4FC; /* Default Light Purple (Bullet Strong Text) */
+            --highlight-color: #FBBF24; /* Yellow for specific elements like keyboard shortcuts */
+        }
+
+        /* Light Mode Overrides */
+        .light-mode {
+            --bg-color: #FFFFFF;
+            --text-color: #1F2937;
+            --card-bg: #F9FAFB;
+            --border-color: #E5E7EB;
+            --highlight-color: #94A3B8;
+        }
+
+        /* --- 2. Dynamic Styling using Variables --- */
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+            min-height: 100vh;
+        }
+
+        .header-title {
+             /* Uses CSS variables for the gradient */
+            background-image: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        h2 {
+            color: var(--primary-color); /* Uses Primary Color */
+        }
+
+        /* Exercise headers and quiz headers use secondary color */
+        #section-5 h2, #section-6 h2 {
+            color: var(--secondary-color);
+        }
+
+        /* Bullet point strong text uses the new tertiary color */
+        .strong-accent {
+            color: var(--tertiary-color);
+        }
+
+        .border-primary {
+            border-color: var(--primary-color) !important;
+        }
+        
+        .bg-card {
+            background-color: var(--card-bg);
+        }
+
+        .syllabus-list li::marker {
+            color: var(--primary-color); /* Main bullet marker remains Primary */
+        }
+        
+        /* Custom list style for deeper indentation */
+        .syllabus-list li {
+            margin-bottom: 0.5rem;
+        }
+        .syllabus-list ul {
+            padding-left: 1.5em; /* Use em to scale with font size */
+            margin-top: 0.5em;
+            list-style-type: disc;
+        }
+        .syllabus-list ul ul {
+            list-style-type: circle;
+        }
+        .syllabus-list ul ul ul {
+            list-style-type: square;
+        }
+
+        /* Styling for the hands-on sections */
+        .hands-on-box {
+            border: 2px solid;
+            border-image: linear-gradient(to right, var(--primary-color), var(--secondary-color)) 1;
+            box-shadow: 0 5px 20px rgba(99, 102, 241, 0.2);
+            position: relative;
+            overflow: hidden;
+            background-color: var(--card-bg);
+            border-radius: 0.5rem;
+        }
+
+        .keyboard-shortcut {
+            color: var(--highlight-color);
+            font-weight: 600;
+        }
+
+        /* --- 3. Customization Panel Styles --- */
+        #customizationPanel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 80vw;
+            max-width: 300px;
+            height: 100%;
+            z-index: 1000;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease-in-out;
+            box-shadow: 4px 0 15px rgba(0, 0, 0, 0.5);
+            padding: 1.5rem;
+            background-color: var(--card-bg);
+            border-right: 1px solid var(--border-color);
+            color: var(--text-color);
+            overflow-y: auto;
+        }
+        #customizationPanel.open {
+            transform: translateX(0);
+        }
+
+        /* Button floating in the bottom right */
+        #menuToggleBtn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1001;
+            width: 56px;
+            height: 56px;
+            background-color: var(--primary-color);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+            transition: background-color 0.3s;
+        }
+
+        /* Slider Toggle CSS (for aesthetics) - Used for Theme only */
+        .switch .slider {
+            background-color: var(--border-color);
+        }
+        .switch input:checked + .slider {
+            background-color: var(--primary-color);
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+        input:checked + .slider:before {
+            transform: translateX(16px);
+        }
+        
+        /* Style the range input track for the font slider */
+        #fontSizeSlider::-webkit-slider-runnable-track {
+            height: 8px;
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+        #fontSizeSlider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            background: var(--primary-color);
+            cursor: pointer;
+            border-radius: 50%;
+            margin-top: -5px; 
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+        }
+        
+        /* Notes Box Styling */
+        #notesBox {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        /* --- 4. Checkbox Styling (Mark as Read) --- */
+        .section-checkbox {
+            /* Force custom styling to override native white background */
+            -webkit-appearance: none; 
+            appearance: none;
+            
+            /* Sizing and basic style */
+            height: 24px;
+            width: 24px;
+            min-width: 24px;
+            min-height: 24px;
+            
+            /* Apply dark theme colors for unchecked state */
+            border: 2px solid var(--border-color);
+            background-color: var(--card-bg); 
+            border-radius: 6px;
+            margin: 0;
+            flex-shrink: 0; 
+            cursor: pointer;
+            
+            /* Positioning for custom checkmark */
+            position: relative; 
+            display: inline-block;
+            transition: background-color 0.1s ease-in-out;
+        }
+
+        /* Checked state: use secondary color for background */
+        .section-checkbox:checked {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+        
+        /* Custom checkmark using ::after on checked state */
+        .section-checkbox:checked::after {
+            content: '';
+            position: absolute;
+            top: 4px;
+            left: 8px;
+            width: 6px;
+            height: 12px;
+            /* White checkmark for high contrast on secondary color background */
+            border: solid white;
+            border-width: 0 3px 3px 0;
+            transform: rotate(45deg);
+        }
+        
+        /* Ensure the h2 takes available space in the flex container */
+        .section-header-flex h2 {
+            flex-shrink: 1;
+            margin-right: 1rem;
+        }
+        
+    </style>
+</head>
+<body>
+
+    <!-- Customization Panel (Slides out from left) -->
+    <div id="customizationPanel">
+
+        <!-- Syllabus Overview Link -->
+        <a href="https://prayosh.github.io/Animate-Mastery-Path/home.html" 
+           class="flex items-center justify-center w-full p-3 mb-6 font-semibold rounded-lg transition duration-200 shadow-lg hover:shadow-xl" 
+           style="background-color: var(--primary-color); color: var(--card-bg);">
+            <!-- Syllabus Icon (Document with Lines) -->
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            Syllabus Overview
+        </a>
+        <!-- END Syllabus Overview Link -->
+
+        <!-- Theme Settings Heading -->
+        <h2 class="text-2xl font-bold mb-4 border-b pb-2" style="color: var(--primary-color); border-bottom-color: var(--border-color);">Theme Settings</h2>
+
+        <!-- Theme Toggle -->
+        <div class="mb-6">
+            <label class="block text-sm font-medium mb-2" style="color: var(--secondary-color);">Theme Mode</label>
+            <div class="flex items-center space-x-4 p-2 rounded-lg" style="background-color: var(--border-color);">
+                <span class="text-sm">Dark</span>
+                <label class="switch relative inline-block w-10 h-6">
+                    <input type="checkbox" id="themeToggle" class="opacity-0 w-0 h-0">
+                    <span class="slider absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full transition-all duration-300"></span>
+                </label>
+                <span class="text-sm">Light</span>
+            </div>
+        </div>
+
+        <!-- Primary Color Picker -->
+        <div class="mb-6">
+            <label for="primaryColor" class="block text-sm font-medium mb-2" style="color: var(--secondary-color);">Primary Colour (Main Headings)</label>
+            <input type="color" id="primaryColor" value="#6366F1" class="w-full h-10 border-none rounded-lg p-0 cursor-pointer">
+        </div>
+
+        <!-- Secondary Color Picker -->
+        <div class="mb-6">
+            <label for="secondaryColor" class="block text-sm font-medium mb-2" style="color: var(--secondary-color);">Secondary Colour (Exercise Headers)</label>
+            <input type="color" id="secondaryColor" value="#34D399" class="w-full h-10 border-none rounded-lg p-0 cursor-pointer">
+        </div>
+
+        <!-- Tertiary Color Picker -->
+        <div class="mb-8">
+            <label for="tertiaryColor" class="block text-sm font-medium mb-2" style="color: var(--secondary-color);">Accent Text Colour (List Items)</label>
+            <input type="color" id="tertiaryColor" value="#A5B4FC" class="w-full h-10 border-none rounded-lg p-0 cursor-pointer">
+        </div>
+        
+        <!-- Font Size Slider -->
+        <div class="mb-8">
+            <label for="fontSizeSlider" class="block text-sm font-medium mb-3" style="color: var(--secondary-color);">Text Font Size</label>
+            <input type="range" id="fontSizeSlider" min="14" max="20" step="1" value="16" class="w-full h-2 rounded-lg appearance-none cursor-pointer">
+            <div class="flex justify-between text-xs mt-1 text-gray-400">
+                <span>Small (14px)</span>
+                <span>Large (20px)</span>
+            </div>
+        </div>
+
+
+        <!-- Reset Button -->
+        <button onclick="setDefaultSettings()" class="w-full px-4 py-2 font-semibold rounded-lg transition duration-200" style="background-color: var(--primary-color); color: var(--card-bg);">
+            Reset to Default Theme
+        </button>
+    </div>
+
+    <!-- Menu Toggle Button (Bottom Right) -->
+    <button id="menuToggleBtn" onclick="togglePanel()" class="fixed bottom-5 right-5 w-14 h-14 rounded-full flex items-center justify-center text-white shadow-xl transition-all duration-300 hover:scale-110">
+        <svg id="menuIcon" class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        <svg id="closeIcon" class="w-7 h-7 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+    </button>
+
+    <!-- Main Content Container -->
+    <div class="max-w-4xl mx-auto pb-16">
+
+        <!-- Header -->
+        <header class="text-center py-6 mb-8 border-b" style="border-bottom-color: var(--primary-color);">
+            <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight font-display header-title">
+                Module 6: Backgrounds, Composition, and Scene Building
+            </h1>
+            <p class="mt-2 text-xl italic font-medium" style="color: var(--secondary-color);">
+                (Intermediate)
+            </p>
+        </header>
+
+        <!-- Progress Bar Container -->
+        <div class="mb-8 p-3 rounded-lg bg-card border border-border-color">
+            <div class="flex justify-between items-center mb-1 text-sm font-medium">
+                <span>Progress</span>
+                <span id="progressPercentage">0%</span>
+            </div>
+            <div id="progressBarContainer" class="w-full h-3 rounded-full overflow-hidden" style="background-color: var(--border-color);">
+                <div id="progressBar" class="h-full transition-all duration-500" style="background-color: var(--secondary-color); width: 0%;"></div>
+            </div>
+        </div>
+
+        <!-- Focus Text -->
+        <div class="mb-8 p-4 rounded-lg border border-border-color bg-card">
+            <p class="text-lg leading-relaxed">
+                <strong class="strong-accent">Focus:</strong> Integrating visual elements to create cohesive, professional scenes for cartoons, movies, series, and marketing ads. This module teaches how to design and import layered backgrounds, apply composition principles to position characters and props effectively, and set up multi-layered scenes for animation. You’ll learn to use the Virtual Camera for dynamic effects like parallax, ensuring visually appealing and organized scenes. Additional concepts like background optimization, color theory basics, and advanced layer management are included to enhance quality and efficiency. Multiple hands-on exercises provide practical experience, preparing you for multi-scene workflows in later modules.
+            </p>
+            <p class="text-lg leading-relaxed mt-4">
+                <strong class="strong-accent">Learning Objectives:</strong>
+            </p>
+            <ul class="list-disc ml-6 mt-2 space-y-1 text-gray-400">
+                <li>Create and import layered backgrounds to add depth to animations.</li>
+                <li>Apply composition principles (e.g., framing, color harmony) for visually balanced scenes.</li>
+                <li>Use the Virtual Camera for dynamic effects like pans and parallax scrolling.</li>
+                <li>Organize multi-layered scenes for efficient animation workflows.</li>
+                <li>Troubleshoot intermediate composition issues and optimize backgrounds for performance.</li>
+                <li>Build practical skills through exercises simulating cartoon and ad scenes.</li>
+            </ul>
+        </div>
+
+
+        <!-- Syllabus Content -->
+        <div class="syllabus-list space-y-8">
+            
+            <!-- 1. Backgrounds -->
+            <section id="section-1">
+                <div class="section-header-flex flex justify-between items-center border-b-2 border-primary/40 pb-2">
+                    <h2 class="text-3xl font-bold">Backgrounds:</h2>
+                    <div class="flex items-center space-x-2">
+                        <label for="check-1" class="text-sm font-medium text-gray-400 hidden sm:inline cursor-pointer">Mark Read</label>
+                        <input type="checkbox" id="check-1" data-section-id="section-1" onchange="toggleSectionRead(this)" class="section-checkbox cursor-pointer">
+                    </div>
+                </div>
+                <ul class="ml-4 space-y-3 pt-4">
+                    <li>
+                        <strong class="strong-accent">Layered Designs:</strong>
+                        <ul class="list-disc ml-4">
+                            <li><strong>Concept:</strong> Creating depth with multiple background layers (e.g., foreground, midground, background) to enhance visual richness in cartoons or ads.</li>
+                            <li><strong>Creating Backgrounds:</strong> Drawing simple vector backgrounds using <code class="keyboard-shortcut">Rectangle (R)</code>, <code class="keyboard-shortcut">Oval (O)</code>, and <code class="keyboard-shortcut">Brush (B)</code> tools (e.g., sky, ground, trees), applying gradients for depth (e.g., blue-to-white sky).</li>
+                            <li><strong>Importing Backgrounds:</strong> Importing layered assets (e.g., PSD from Photoshop with sky/hills/trees layers, SVG/PNG from Freepik or Adobe Stock), ensuring high resolution (300 DPI for HD).</li>
+                            <li><strong>Layer Organization:</strong> Placing each background element on separate layers (e.g., “BG\_Sky”, “BG\_Trees”), naming clearly for easy access.</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Parallax Effect:</strong>
+                        <ul class="list-disc ml-4">
+                            <li><strong>Introduction:</strong> Parallax for depth illusion (e.g., background moves slower than foreground), common in cartoon scenes or dynamic ads.</li>
+                            <li><strong>Virtual Camera Tool (V):</strong> Activating (<code class="keyboard-shortcut">Window > Toolbars > Camera</code>), panning (drag to move view), zooming (Alt+drag), rotating (Shift+drag), keyframing camera moves (<code class="keyboard-shortcut">F6</code> on camera layer).</li>
+                            <li><strong>Parallax Setup:</strong> Animating background layers at different speeds (e.g., distant mountains move slower via shorter motion tweens, foreground faster), using motion paths for smooth pans.</li>
+                            <li><strong>Testing:</strong> Previewing parallax with Loop Playback (<code class="keyboard-shortcut">Control > Loop Playback</code>) to ensure natural flow.</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Additional Concepts:</strong>
+                        <ul class="list-disc ml-4">
+                            <li><strong>Background Optimization:</strong> Simplifying vectors (fewer anchor points) to reduce file size, converting complex bitmaps to vectors via <code class="keyboard-shortcut">Trace Bitmap</code> (Modify > Bitmap > Trace Bitmap, adjust settings for clean lines).</li>
+                            <li><strong>Reusability:</strong> Saving backgrounds as symbols (e.g., “sym\_SceneBG”) for reuse across scenes, storing in Library folders.</li>
+                            <li><strong>Seamless Looping:</strong> Designing backgrounds for looping animations (e.g., scrolling cityscape for ad), ensuring edges align perfectly.</li>
+                        </ul>
+                    </li>
+                </ul>
+            </section>
+
+            <!-- 2. Composition -->
+            <section id="section-2">
+                <div class="section-header-flex flex justify-between items-center border-b-2 border-primary/40 pb-2 mt-8">
+                    <h2 class="text-3xl font-bold">Composition:</h2>
+                    <div class="flex items-center space-x-2">
+                        <label for="check-2" class="text-sm font-medium text-gray-400 hidden sm:inline cursor-pointer">Mark Read</label>
+                        <input type="checkbox" id="check-2" data-section-id="section-2" onchange="toggleSectionRead(this)" class="section-checkbox cursor-pointer">
+                    </div>
+                </div>
+                <ul class="ml-4 space-y-3 pt-4">
+                    <li>
+                        <strong class="strong-accent">Framing Rules:</strong>
+                        <ul class="list-disc ml-4">
+                            <li><strong>Rule of Thirds:</strong> Dividing stage into 9 equal parts (enable grid via <code class="keyboard-shortcut">View > Grid > Show Grid</code>), positioning characters/props on intersections for balanced visuals.</li>
+                            <li><strong>Focal Points:</strong> Placing key elements (e.g., character’s face, product in ad) near center or third lines for emphasis, using guides (<code class="keyboard-shortcut">Ctrl+R</code>, drag from ruler) for precision.</li>
+                            <li><strong>Leading Lines:</strong> Using background shapes (e.g., road, horizon) to guide viewer’s eye toward action.</li>
+                            <li><strong>Staging:</strong> Arranging elements to direct attention (e.g., character larger in foreground, props smaller in background).</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Color Matching:</strong>
+                        <ul class="list-disc ml-4">
+                            <li><strong>Color Theory Basics:</strong> Using complementary colors (e.g., blue sky, green trees) or analogous schemes (e.g., blue-to-purple gradients) for harmony, accessed via <code class="keyboard-shortcut">Color panel</code> (Window > Color).</li>
+                            <li><strong>Palette Consistency:</strong> Matching character/prop colors to background (e.g., warm character tones against cool background for contrast), using <code class="keyboard-shortcut">Eyedropper (I)</code> to sample colors.</li>
+                            <li><strong>Mood Setting:</strong> Choosing colors for tone (e.g., bright for upbeat ads, muted for dramatic cartoon scenes), adjusting alpha for subtle overlays.</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Additional Concepts:</strong>
+                        <ul class="list-disc ml-4">
+                            <li><strong>Depth and Perspective:</strong> Scaling background elements smaller for distance (e.g., far trees at 50% size), applying blur filters (Properties > Filters > Blur) for depth of field.</li>
+                            <li><strong>Safe Zones:</strong> Ensuring key elements stay within action-safe/title-safe areas (<code class="keyboard-shortcut">View > Show Frame</code>) for video outputs (e.g., TV, YouTube).</li>
+                            <li><strong>Visual Hierarchy:</strong> Prioritizing elements via size, color, or position (e.g., character largest, props secondary).</li>
+                        </ul>
+                    </li>
+                </ul>
+            </section>
+
+            <!-- 3. Scene Setup -->
+            <section id="section-3">
+                <div class="section-header-flex flex justify-between items-center border-b-2 border-primary/40 pb-2 mt-8">
+                    <h2 class="text-3xl font-bold">Scene Setup:</h2>
+                    <div class="flex items-center space-x-2">
+                        <label for="check-3" class="text-sm font-medium text-gray-400 hidden sm:inline cursor-pointer">Mark Read</label>
+                        <input type="checkbox" id="check-3" data-section-id="section-3" onchange="toggleSectionRead(this)" class="section-checkbox cursor-pointer">
+                    </div>
+                </div>
+                <ul class="ml-4 space-y-3 pt-4">
+                    <li>
+                        <strong class="strong-accent">Multi-Layer Organization:</strong>
+                        <ul class="list-disc ml-4">
+                            <li><strong>Layer Hierarchy:</strong> Structuring layers logically (e.g., bottom: “BG\_Sky”, middle: “BG\_Trees”, top: “Character”, “Prop”), using layer folders (<code class="keyboard-shortcut">Insert > Timeline > Layer Folder</code>) for grouping.</li>
+                            <li><strong>Layer Properties:</strong> Setting outline mode (click square icon) for easier editing, using guide layers for non-exporting references (e.g., composition grid), mask layers for effects (e.g., spotlight on character).</li>
+                            <li><strong>Naming Conventions:</strong> Consistent naming (e.g., “FG\_Prop1”, “Char\_Main”) for quick navigation in complex scenes.</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Scene Integration:</strong>
+                        <ul class="list-disc ml-4">
+                            <li><strong>Adding Characters/Props:</strong> Dragging rigged characters (from Module 4) and props (e.g., “sym\_Bag”) from Library, positioning via <code class="keyboard-shortcut">Properties</code> (X/Y coordinates) or <code class="keyboard-shortcut">Align panel</code>.</li>
+                            <li><strong>Layer Interactions:</strong> Ensuring characters/props align with background (e.g., character feet on ground layer), using snapping for accuracy.</li>
+                            <li><strong>Camera Layer:</strong> Adding camera layer (<code class="keyboard-shortcut">Insert > Timeline > Camera</code>) for dynamic scene framing, keyframing moves (e.g., pan across scene).</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Additional Concepts:</strong>
+                        <ul class="list-disc ml-4">
+                            <li><strong>Scene Planning:</strong> Sketching rough layouts (use <code class="keyboard-shortcut">Pencil Tool</code> on guide layer) to plan character/prop placement before animating.</li>
+                            <li><strong>Layer Locking Strategy:</strong> Locking background layers during character tweaks to avoid accidental edits.</li>
+                            <li><strong>Preview Efficiency:</strong> Using low-quality preview (<code class="keyboard-shortcut">View > Preview Mode > Fast</code>) for quick checks in complex scenes.</li>
+                        </ul>
+                    </li>
+                </ul>
+            </section>
+
+            <!-- 4. Troubleshooting for Intermediate Users -->
+            <section id="section-4">
+                <div class="section-header-flex flex justify-between items-center border-b-2 border-primary/40 pb-2 mt-8">
+                    <h2 class="text-3xl font-bold">Troubleshooting for Intermediate Users:</h2>
+                    <div class="flex items-center space-x-2">
+                        <label for="check-4" class="text-sm font-medium text-gray-400 hidden sm:inline cursor-pointer">Mark Read</label>
+                        <input type="checkbox" id="check-4" data-section-id="section-4" onchange="toggleSectionRead(this)" class="section-checkbox cursor-pointer">
+                    </div>
+                </div>
+                <ul class="ml-4 space-y-3 pt-4">
+                    <li>
+                        <strong class="strong-accent">Common Errors:</strong>
+                        <ul class="list-disc ml-4">
+                            <li><strong>Misaligned Backgrounds:</strong> Layers not scaled properly (check Properties for size), or import resolution issues (re-import at higher DPI).</li>
+                            <li><strong>Parallax Issues:</strong> Layers moving at wrong speeds (adjust tween durations), or camera keyframes misaligned (check Timeline gaps).</li>
+                            <li><strong>Composition Clutter:</strong> Overlapping elements (adjust stacking order via Modify > Arrange), or poor framing (reposition using Rule of Thirds grid).</li>
+                            <li><strong>Performance Lag:</strong> Too many vector points (simplify via Modify > Shape > Optimize), or excessive filters (remove unused).</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Solutions:</strong>
+                        <ul class="list-disc ml-4">
+                            <li>Test camera moves in short segments, use onion skinning for layer alignment, save backups before major edits, check Adobe forums for “Virtual Camera errors.”</li>
+                        </ul>
+                    </li>
+                    <li>
+                         <strong class="strong-accent">Additional Concepts:</strong>
+                        <ul class="list-disc ml-4">
+                            <li>Checking document settings (frame rate, canvas size) for output consistency, using “Test Movie” (<code class="keyboard-shortcut">Ctrl+Enter</code>) for full render checks.</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Efficiency Tips:</strong>
+                        <ul class="list-disc ml-4">
+                            <li><strong>Template Backgrounds:</strong> Create reusable background sets (e.g., “City\_BG”, “Forest\_BG”) as symbols, store in Library for quick drag-and-drop.</li>
+                            <li><strong>Batch Imports:</strong> Import multiple background layers at once (<code class="keyboard-shortcut">File > Import > Import to Library</code>), organize into folders immediately.</li>
+                            <li><strong>Shortcuts:</strong> <code class="keyboard-shortcut">V</code> for Camera Tool, <code class="keyboard-shortcut">Ctrl+G</code> for grouping layers, <code class="keyboard-shortcut">Ctrl+R</code> for rulers/guides, <code class="keyboard-shortcut">F6</code> for camera keyframes.</li>
+                            <li><strong>Workflow:</strong> Plan composition with guide layers first, lock finalized background layers, reuse camera animations via Copy/Paste Motion.</li>
+                            <li><strong>Optimization:</strong> Convert complex backgrounds to single symbols for lighter files, use PNG over JPEG for transparency support.</li>
+                        </ul>
+                    </li>
+                </ul>
+            </section>
+
+            <!-- 5. Hands-On Exercises -->
+            <section id="section-5" class="mt-12">
+                <div class="section-header-flex flex justify-between items-center border-b-2 pb-2 mb-6" style="border-bottom-color: var(--secondary-color);">
+                    <h2 class="text-3xl font-bold" style="color: var(--secondary-color);">Hands-On Exercises (Practice for Reinforcement):</h2>
+                    <div class="flex items-center space-x-2">
+                        <label for="check-5" class="text-sm font-medium text-gray-400 hidden sm:inline cursor-pointer">Mark Read</label>
+                        <input type="checkbox" id="check-5" data-section-id="section-5" onchange="toggleSectionRead(this)" class="section-checkbox cursor-pointer">
+                    </div>
+                </div>
+                <div class="space-y-6">
+                    <div class="hands-on-box p-6">
+                        <h3 class="text-xl font-semibold mb-2" style="color: var(--secondary-color);">Exercise 1: Layered Background Creation (Time: 20-25 minutes)</h3>
+                        <ul class="list-disc ml-4 text-gray-400 space-y-1">
+                            <li>Create a new document (1920x1080, 24 fps), draw a simple three-layer background (sky with gradient, hills with green fill, foreground grass with texture), place each on separate layers, name them (e.g., “BG\_Sky”), align using guides, save as “SimpleBG.fla”.</li>
+                        </ul>
+                    </div>
+                    <div class="hands-on-box p-6">
+                        <h3 class="text-xl font-semibold mb-2" style="color: var(--secondary-color);">Exercise 2: Importing and Optimizing (Time: 20-25 minutes)</h3>
+                        <ul class="list-disc ml-4 text-gray-400 space-y-1">
+                            <li>Import a layered PSD or multiple PNGs (e.g., forest scene from Freepik), place on separate layers, simplify one layer using Trace Bitmap (adjust to low detail), apply a subtle blur filter to distant layer for depth, save as “ImportedBG.fla”.</li>
+                        </ul>
+                    </div>
+                    <div class="hands-on-box p-6">
+                        <h3 class="text-xl font-semibold mb-2" style="color: var(--secondary-color);">Exercise 3: Parallax with Camera (Time: 20-25 minutes)</h3>
+                        <ul class="list-disc ml-4 text-gray-400 space-y-1">
+                            <li>Using the background from Exercise 1, add a camera layer, keyframe a 20-frame pan (e.g., left to right), animate background layers at different speeds (sky slowest, grass fastest), preview with Loop Playback, adjust easing for smoothness. Save as “ParallaxBG.fla”.</li>
+                        </ul>
+                    </div>
+                    <div class="hands-on-box p-6">
+                        <h3 class="text-xl font-semibold mb-2" style="color: var(--secondary-color);">Exercise 4: Scene Composition (Time: 25-30 minutes)</h3>
+                        <ul class="list-disc ml-4 text-gray-400 space-y-1">
+                            <li>Place a rigged character (from Module 4) and a prop (e.g., “sym\_Tree”) on the background from Exercise 2, position using Rule of Thirds (character on left third, prop on right), match colors (e.g., sample background green for prop), add a 10-frame camera zoom. Save as “ComposedScene.fla”.</li>
+                        </ul>
+                    </div>
+                    <div class="hands-on-box p-6">
+                        <h3 class="text-xl font-semibold mb-2" style="color: var(--secondary-color);">Project Extension: Full Scene Setup (Time: 30-40 minutes)</h3>
+                        <ul class="list-disc ml-4 text-gray-400 space-y-1">
+                            <li>Combine exercises: Use a layered background, place a rigged character and prop, animate a simple character wave (10 frames, reuse from Module 4), apply a 20-frame camera pan with parallax, ensure composition follows Rule of Thirds, export as MP4. Save as “FullScene.fla”.</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 6. Self-Assessment Quiz -->
+            <section id="section-6" class="mt-12 p-6 rounded-xl bg-card border border-border-color">
+                <div class="section-header-flex flex justify-between items-center pb-2 mb-4" style="border-bottom: 1px solid var(--border-color);">
+                    <h2 class="text-3xl font-bold" style="color: var(--secondary-color);">Self-Assessment Quiz:</h2>
+                    <div class="flex items-center space-x-2">
+                        <label for="check-6" class="text-sm font-medium text-gray-400 hidden sm:inline cursor-pointer">Mark Read</label>
+                        <input type="checkbox" id="check-6" data-section-id="section-6" onchange="toggleSectionRead(this)" class="section-checkbox cursor-pointer">
+                    </div>
+                </div>
+                <ul class="list-disc ml-4 space-y-3 text-gray-300 pt-4">
+                    <li>What is parallax in animation? (<strong class="strong-accent">Answer: Background layers moving at different speeds for depth.</strong>)</li>
+                    <li>How do you activate the Virtual Camera? (<strong class="strong-accent">Answer: Window > Toolbars > Camera or V key.</strong>)</li>
+                    <li>Describe the Rule of Thirds. (<strong class="strong-accent">Answer: Divide stage into 9 parts, place key elements on intersections for balance.</strong>)</li>
+                    <li>How do you optimize a complex background? (<strong class="strong-accent">Answer: Simplify vectors, convert to symbol, reduce filters.</strong>)</li>
+                    <li>Name one composition error and its fix. (<strong class="strong-accent">Answer: E.g., Cluttered elements—reposition using Align panel or adjust stacking order.</strong>)</li>
+                    <li>What shortcut enables rulers? (<strong class="strong-accent">Answer: Ctrl+R.</strong>)</li>
+                </ul>
+                <p class="text-gray-400 mt-4 italic">
+                    This expanded module equips you with intermediate skills for creating visually cohesive scenes, with detailed background, background, composition, and camera techniques. Multiple exercises ensure hands-on mastery, preparing you for multi-scene workflows in Module 7. Complete all before advancing.
+                </p>
+            </section>
+        </div>
+
+        <!-- Notes Section -->
+        <section class="mt-16">
+            <h2 class="text-3xl font-bold border-b-2 pb-2 mb-4" style="color: var(--primary-color); border-bottom-color: var(--border-color);">My Personal Notes</h2>
+            <p class="text-sm text-gray-400 mb-3">These notes are saved automatically in your browser for Module 6.</p>
+            <textarea id="notesBox" rows="10" placeholder="Type your notes, reminders, or specific difficulties here..." class="w-full p-4 rounded-lg focus:outline-none focus:ring-2" style="focus-ring-color: var(--primary-color);"></textarea>
+        </section>
+
+        <!-- Final Instruction -->
+        <p class="mt-12 text-center text-lg italic text-gray-400">
+            With solid scene composition skills, you are ready to tackle multi-scene production workflows!
+        </p>
+
+    </div>
+
+    <!-- JavaScript for Theme, Color, Font, Progress Control, and Notes -->
+    <script>
+        const PANEL_ID = 'customizationPanel';
+        const BODY = document.body;
+        const PANEL = document.getElementById(PANEL_ID);
+        const MENU_TOGGLE_BTN = document.getElementById('menuToggleBtn');
+        const PRIMARY_COLOR_INPUT = document.getElementById('primaryColor');
+        const SECONDARY_COLOR_INPUT = document.getElementById('secondaryColor');
+        const TERTIARY_COLOR_INPUT = document.getElementById('tertiaryColor');
+        const FONT_SIZE_SLIDER = document.getElementById('fontSizeSlider');
+        const THEME_TOGGLE = document.getElementById('themeToggle');
+        const NOTES_BOX = document.getElementById('notesBox');
+        const MENU_ICON = document.getElementById('menuIcon');
+        const CLOSE_ICON = document.getElementById('closeIcon');
+
+        // Progress elements
+        const PROGRESS_BAR = document.getElementById('progressBar');
+        const PROGRESS_PERCENTAGE_SPAN = document.getElementById('progressPercentage');
+        
+        // --- Storage keys (Unique for Module 6) ---
+        const PROGRESS_STORAGE_KEY = 'module6Progress'; // Unique key
+        const NOTES_STORAGE_KEY = 'module6Notes'; // Unique key
+        const THEME_STORAGE_KEY = 'themeSettings'; // Shared key
+        
+        // All section IDs for this module (6 sections)
+        const SECTION_IDS = [
+            'section-1', 'section-2', 'section-3', 'section-4',
+            'section-5', 'section-6'
+        ];
+        
+        let sectionStatus = {}; 
+
+        const DEFAULT_SETTINGS = {
+            isDark: true,
+            primary: '#6366F1', // Indigo
+            secondary: '#34D399', // Emerald
+            tertiary: '#A5B4FC', // Light Purple
+            fontSize: 16, // Default base size in pixels
+        };
+
+        // --- Core Functions: Settings ---
+
+        /** Loads settings from localStorage and applies them. */
+        function loadSettings() {
+            // Theme settings are shared across modules for consistency
+            const savedSettings = JSON.parse(localStorage.getItem(THEME_STORAGE_KEY));
+            let currentSettings;
+
+            if (savedSettings) {
+                currentSettings = { ...DEFAULT_SETTINGS, ...savedSettings };
+            } else {
+                currentSettings = DEFAULT_SETTINGS;
+            }
+            
+            // Set input values to current state
+            THEME_TOGGLE.checked = !currentSettings.isDark;
+            PRIMARY_COLOR_INPUT.value = currentSettings.primary;
+            SECONDARY_COLOR_INPUT.value = currentSettings.secondary;
+            TERTIARY_COLOR_INPUT.value = currentSettings.tertiary;
+            FONT_SIZE_SLIDER.value = currentSettings.fontSize;
+
+            applySettings(currentSettings);
+        }
+
+        /** Saves current settings to localStorage. */
+        function saveSettings(settings) {
+            localStorage.setItem(THEME_STORAGE_KEY, JSON.stringify(settings));
+        }
+
+        /** Applies the theme, colors, and font size to the document. */
+        function applySettings(settings) {
+            const root = document.documentElement;
+
+            // Apply Theme Mode
+            if (settings.isDark) {
+                BODY.classList.remove('light-mode');
+                root.style.setProperty('--bg-color', '#0A0A1F');
+                root.style.setProperty('--text-color', '#E5E7EB');
+                root.style.setProperty('--card-bg', '#111827');
+                root.style.setProperty('--border-color', '#374151');
+                root.style.setProperty('--highlight-color', '#FBBF24');
+            } else {
+                BODY.classList.add('light-mode');
+                root.style.setProperty('--bg-color', '#FFFFFF');
+                root.style.setProperty('--text-color', '#1F2937');
+                root.style.setProperty('--card-bg', '#F9FAFB');
+                root.style.setProperty('--border-color', '#E5E7EB');
+                root.style.setProperty('--highlight-color', '#94A3B8');
+            }
+
+            // Apply custom colors
+            root.style.setProperty('--primary-color', settings.primary);
+            root.style.setProperty('--secondary-color', settings.secondary);
+            root.style.setProperty('--tertiary-color', settings.tertiary);
+
+            // Applying font size to the HTML root element (document.documentElement)
+            root.style.fontSize = `${settings.fontSize}px`;
+
+            // Update floating button background
+            MENU_TOGGLE_BTN.style.backgroundColor = settings.primary;
+        }
+
+        /** Updates and saves settings based on current input values. */
+        function updateSettingsFromInputs() {
+            const settings = {
+                isDark: !THEME_TOGGLE.checked,
+                primary: PRIMARY_COLOR_INPUT.value,
+                secondary: SECONDARY_COLOR_INPUT.value,
+                tertiary: TERTIARY_COLOR_INPUT.value,
+                fontSize: parseInt(FONT_SIZE_SLIDER.value),
+            };
+            applySettings(settings);
+            saveSettings(settings);
+        }
+
+        /** Resets all settings to the original default and applies them. */
+        function setDefaultSettings() {
+            // Set input values back to defaults
+            THEME_TOGGLE.checked = !DEFAULT_SETTINGS.isDark;
+            PRIMARY_COLOR_INPUT.value = DEFAULT_SETTINGS.primary;
+            SECONDARY_COLOR_INPUT.value = DEFAULT_SETTINGS.secondary;
+            TERTIARY_COLOR_INPUT.value = DEFAULT_SETTINGS.tertiary;
+            FONT_SIZE_SLIDER.value = DEFAULT_SETTINGS.fontSize; // Reset font size to 16
+
+            // Apply and save the default settings
+            applySettings(DEFAULT_SETTINGS);
+            saveSettings(DEFAULT_SETTINGS);
+            
+            showTemporaryMessage('Theme settings reset to default dark mode and font size!');
+            togglePanel(); // Close panel after reset
+        }
+        
+        // --- Core Functions: Notes ---
+        
+        /** Loads notes from localStorage and applies them (Module 6 specific key). */
+        function loadNotes() {
+            const notes = localStorage.getItem(NOTES_STORAGE_KEY);
+            if (NOTES_BOX && notes) {
+                NOTES_BOX.value = notes;
+            }
+        }
+
+        /** Saves current notes to localStorage (Module 6 specific key). */
+        function saveNotes() {
+            if (NOTES_BOX) {
+                localStorage.setItem(NOTES_STORAGE_KEY, NOTES_BOX.value);
+            }
+        }
+
+        // --- Core Functions: Progress ---
+
+        /** Loads progress state from localStorage and updates UI (Module 6 specific key). */
+        function loadProgress() {
+            const savedProgress = localStorage.getItem(PROGRESS_STORAGE_KEY);
+            if (savedProgress) {
+                sectionStatus = JSON.parse(savedProgress);
+            } else {
+                // Initialize all to false if nothing is saved
+                SECTION_IDS.forEach(id => sectionStatus[id] = false);
+            }
+            
+            // Update checkboxes on screen
+            SECTION_IDS.forEach(id => {
+                // Checkbox ID format is 'check-1', 'check-2', etc.
+                const index = id.split('-')[1];
+                const checkId = `check-${index}`;
+                const checkbox = document.getElementById(checkId);
+                if (checkbox) {
+                    // Use boolean coercion (!!sectionStatus[id]) to set checked state
+                    checkbox.checked = !!sectionStatus[id];
+                }
+            });
+        }
+        
+        /** Updates the progress bar percentage display. */
+        function updateProgressBar() {
+            const totalSections = SECTION_IDS.length;
+            const completedSections = SECTION_IDS.filter(id => sectionStatus[id]).length;
+            const progressPercentage = (completedSections / totalSections) * 100;
+            const fixedPercentage = progressPercentage.toFixed(0);
+            
+            if (PROGRESS_BAR && PROGRESS_PERCENTAGE_SPAN) {
+                PROGRESS_BAR.style.width = `${fixedPercentage}%`;
+                PROGRESS_PERCENTAGE_SPAN.textContent = `${fixedPercentage}%`;
+            }
+        }
+
+        /** Handles the toggle change event for a section. */
+        function toggleSectionRead(checkbox) {
+            const sectionId = checkbox.getAttribute('data-section-id');
+            const isChecked = checkbox.checked;
+            
+            sectionStatus[sectionId] = isChecked;
+            localStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify(sectionStatus));
+            updateProgressBar();
+            
+            const message = isChecked ? `Module 6: Section marked as complete! (${sectionId})` : `Module 6: Section marked as incomplete. (${sectionId})`;
+            showTemporaryMessage(message);
+        }
+        
+        // Expose to global scope for HTML inline calls (onclick/onchange)
+        window.setDefaultSettings = setDefaultSettings;
+        window.togglePanel = togglePanel;
+        window.toggleSectionRead = toggleSectionRead;
+
+
+        // --- Utility Functions ---
+
+        /** Toggles the customization panel visibility. */
+        function togglePanel() {
+            const isOpen = PANEL.classList.toggle('open');
+            MENU_ICON.classList.toggle('hidden', isOpen);
+            CLOSE_ICON.classList.toggle('hidden', !isOpen);
+        }
+        
+        // Custom Message Box function (replaces alert())
+        function showTemporaryMessage(message) {
+            let msgBox = document.getElementById('tempMessageBox');
+            if (!msgBox) {
+                msgBox = document.createElement('div');
+                msgBox.id = 'tempMessageBox';
+                // Adjusting positioning for mobile view
+                msgBox.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white p-3 rounded-lg shadow-xl z-[2000] opacity-0 transition-opacity duration-300 pointer-events-none text-sm sm:text-base';
+                document.body.appendChild(msgBox);
+            }
+            msgBox.textContent = message;
+            msgBox.style.opacity = '1';
+
+            setTimeout(() => {
+                msgBox.style.opacity = '0';
+            }, 3000);
+        }
+
+        // --- Initialization ---
+
+        window.onload = () => {
+            loadSettings();
+            loadNotes(); // Load saved notes for Module 6
+            loadProgress(); // Load saved progress for Module 6
+            updateProgressBar(); // Update bar based on loaded progress
+
+            // Attach listeners to input fields
+            PRIMARY_COLOR_INPUT.addEventListener('input', updateSettingsFromInputs);
+            SECONDARY_COLOR_INPUT.addEventListener('input', updateSettingsFromInputs);
+            TERTIARY_COLOR_INPUT.addEventListener('input', updateSettingsFromInputs);
+            FONT_SIZE_SLIDER.addEventListener('input', updateSettingsFromInputs); 
+            THEME_TOGGLE.addEventListener('change', updateSettingsFromInputs);
+            
+            // Listener for notes box saving
+            if (NOTES_BOX) {
+                NOTES_BOX.addEventListener('input', saveNotes);
+            }
+        };
+    </script>
+</body>
+</html>
