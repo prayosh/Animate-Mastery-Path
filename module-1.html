@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 1: Setup and Interface Mastery</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Configure Tailwind -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Bebas Neue', 'sans-serif'],
+                    },
+                },
+            }
+        }
+    </script>
+    <style>
+        /* --- 1. CSS Variables for Customization --- */
+        :root {
+            /* Default Dark Mode Colors */
+            --bg-color: #0A0A1F;
+            --text-color: #E5E7EB;
+            --card-bg: #111827;
+            --border-color: #374151;
+            --primary-color: #6366F1; /* Default Indigo (Main Headings) */
+            --secondary-color: #34D399; /* Default Emerald (Exercise Headers/Accents) */
+            --tertiary-color: #A5B4FC; /* Default Light Purple (Bullet Strong Text) */
+            --highlight-color: #FBBF24; /* Yellow for specific elements like keyboard shortcuts */
+            /* Root font size will be controlled by JS for scaling */
+        }
+
+        /* Light Mode Overrides */
+        .light-mode {
+            --bg-color: #FFFFFF;
+            --text-color: #1F2937;
+            --card-bg: #F9FAFB;
+            --border-color: #E5E7EB;
+            --highlight-color: #94A3B8;
+        }
+
+        /* --- 2. Dynamic Styling using Variables --- */
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+            min-height: 100vh;
+        }
+
+        .header-title {
+             /* Uses CSS variables for the gradient */
+            background-image: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        h2 {
+            color: var(--primary-color); /* Uses Primary Color */
+        }
+
+        /* Exercise headers and quiz headers use secondary color */
+        #section-6 h2, #section-7 h2 {
+            color: var(--secondary-color);
+        }
+
+        /* Bullet point strong text uses the new tertiary color */
+        .strong-accent {
+            color: var(--tertiary-color);
+        }
+
+        .border-primary {
+            border-color: var(--primary-color) !important;
+        }
+        
+        .bg-card {
+            background-color: var(--card-bg);
+        }
+
+        .syllabus-list li::marker {
+            color: var(--primary-color); /* Main bullet marker remains Primary */
+        }
+        
+        /* Custom list style for deeper indentation */
+        .syllabus-list li {
+            margin-bottom: 0.5rem;
+        }
+        .syllabus-list ul {
+            padding-left: 1.5em; /* Use em to scale with font size */
+            margin-top: 0.5em;
+        }
+        .syllabus-list ul ul {
+            list-style-type: circle;
+        }
+        .syllabus-list ul ul ul {
+            list-style-type: disc;
+        }
+
+        /* Styling for the hands-on sections */
+        .hands-on-box {
+            border: 2px solid;
+            border-image: linear-gradient(to right, var(--primary-color), var(--secondary-color)) 1;
+            box-shadow: 0 5px 20px rgba(99, 102, 241, 0.2);
+            position: relative;
+            overflow: hidden;
+            background-color: var(--card-bg);
+            border-radius: 0.5rem;
+        }
+
+        .keyboard-shortcut {
+            color: var(--highlight-color);
+            font-weight: 600;
+        }
+
+        /* --- 3. Customization Panel Styles --- */
+        #customizationPanel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 80vw;
+            max-width: 300px;
+            height: 100%;
+            z-index: 1000;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease-in-out;
+            box-shadow: 4px 0 15px rgba(0, 0, 0, 0.5);
+            padding: 1.5rem;
+            background-color: var(--card-bg);
+            border-right: 1px solid var(--border-color);
+            color: var(--text-color);
+            overflow-y: auto; /* Ensure panel is scrollable if content overflows */
+        }
+        #customizationPanel.open {
+            transform: translateX(0);
+        }
+
+        /* Button floating in the bottom right */
+        #menuToggleBtn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1001;
+            width: 56px;
+            height: 56px;
+            background-color: var(--primary-color);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+            transition: background-color 0.3s;
+        }
+
+        /* Slider Toggle CSS (for aesthetics) - Used for Theme only */
+        .switch .slider {
+            background-color: var(--border-color);
+        }
+        .switch input:checked + .slider {
+            background-color: var(--primary-color);
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+        input:checked + .slider:before {
+            transform: translateX(16px);
+        }
+        
+        /* Style the range input track for the font slider */
+        #fontSizeSlider::-webkit-slider-runnable-track {
+            height: 8px;
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+        #fontSizeSlider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            background: var(--primary-color);
+            cursor: pointer;
+            border-radius: 50%;
+            margin-top: -5px; 
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+        }
+        
+        /* Notes Box Styling */
+        #notesBox {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        /* --- 4. Checkbox Styling (Mark as Read) --- */
+        .section-checkbox {
+            /* Force custom styling to override native white background */
+            -webkit-appearance: none; 
+            appearance: none;
+            
+            /* Sizing and basic style */
+            height: 24px;
+            width: 24px;
+            min-width: 24px;
+            min-height: 24px;
+            
+            /* Apply dark theme colors for unchecked state */
+            border: 2px solid var(--border-color);
+            background-color: var(--card-bg); 
+            border-radius: 6px;
+            margin: 0;
+            flex-shrink: 0; 
+            cursor: pointer;
+            
+            /* Positioning for custom checkmark */
+            position: relative; 
+            display: inline-block;
+            transition: background-color 0.1s ease-in-out;
+        }
+
+        /* Checked state: use secondary color for background */
+        .section-checkbox:checked {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+        
+        /* Custom checkmark using ::after on checked state */
+        .section-checkbox:checked::after {
+            content: '';
+            position: absolute;
+            top: 4px;
+            left: 8px;
+            width: 6px;
+            height: 12px;
+            /* White checkmark for high contrast on secondary color background */
+            border: solid white;
+            border-width: 0 3px 3px 0;
+            transform: rotate(45deg);
+        }
+        
+        /* Ensure the h2 takes available space in the flex container */
+        .section-header-flex h2 {
+            flex-shrink: 1;
+            margin-right: 1rem;
+        }
+        
+    </style>
+</head>
+<body>
+
+    <!-- Customization Panel (Slides out from left) -->
+    <div id="customizationPanel">
+
+        <!-- NEW: Syllabus Overview Link (MOVED TO TOP) -->
+        <a href="https://prayosh.github.io/Animate-Mastery-Path/home.html" 
+           class="flex items-center justify-center w-full p-3 mb-6 font-semibold rounded-lg transition duration-200 shadow-lg hover:shadow-xl" 
+           style="background-color: var(--primary-color); color: var(--card-bg);">
+            <!-- UPDATED ICON: Now a document/syllabus icon -->
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            Syllabus Overview
+        </a>
+        <!-- END NEW: Syllabus Overview Link -->
+
+        <!-- Theme Settings Heading -->
+        <h2 class="text-2xl font-bold mb-4 border-b pb-2" style="color: var(--primary-color); border-bottom-color: var(--border-color);">Theme Settings</h2>
+
+        <!-- Theme Toggle -->
+        <div class="mb-6">
+            <label class="block text-sm font-medium mb-2" style="color: var(--secondary-color);">Theme Mode</label>
+            <div class="flex items-center space-x-4 p-2 rounded-lg" style="background-color: var(--border-color);">
+                <span class="text-sm">Dark</span>
+                <label class="switch relative inline-block w-10 h-6">
+                    <input type="checkbox" id="themeToggle" class="opacity-0 w-0 h-0">
+                    <span class="slider absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full transition-all duration-300"></span>
+                </label>
+                <span class="text-sm">Light</span>
+            </div>
+        </div>
+
+        <!-- Primary Color Picker -->
+        <div class="mb-6">
+            <label for="primaryColor" class="block text-sm font-medium mb-2" style="color: var(--secondary-color);">Primary Colour (Main Headings)</label>
+            <input type="color" id="primaryColor" value="#6366F1" class="w-full h-10 border-none rounded-lg p-0 cursor-pointer">
+        </div>
+
+        <!-- Secondary Color Picker -->
+        <div class="mb-6">
+            <label for="secondaryColor" class="block text-sm font-medium mb-2" style="color: var(--secondary-color);">Secondary Colour (Exercise Headers)</label>
+            <input type="color" id="secondaryColor" value="#34D399" class="w-full h-10 border-none rounded-lg p-0 cursor-pointer">
+        </div>
+
+        <!-- Tertiary Color Picker -->
+        <div class="mb-8">
+            <label for="tertiaryColor" class="block text-sm font-medium mb-2" style="color: var(--secondary-color);">Accent Text Colour (List Items)</label>
+            <input type="color" id="tertiaryColor" value="#A5B4FC" class="w-full h-10 border-none rounded-lg p-0 cursor-pointer">
+        </div>
+        
+        <!-- Font Size Slider -->
+        <div class="mb-8">
+            <label for="fontSizeSlider" class="block text-sm font-medium mb-3" style="color: var(--secondary-color);">Text Font Size</label>
+            <input type="range" id="fontSizeSlider" min="14" max="20" step="1" value="16" class="w-full h-2 rounded-lg appearance-none cursor-pointer">
+            <div class="flex justify-between text-xs mt-1 text-gray-400">
+                <span>Small (14px)</span>
+                <span>Large (20px)</span>
+            </div>
+        </div>
+
+
+        <!-- Reset Button -->
+        <button onclick="setDefaultSettings()" class="w-full px-4 py-2 font-semibold rounded-lg transition duration-200" style="background-color: var(--primary-color); color: var(--card-bg);">
+            Set to Default Theme
+        </button>
+    </div>
+
+    <!-- Menu Toggle Button (Bottom Right) -->
+    <button id="menuToggleBtn" onclick="togglePanel()" class="fixed bottom-5 right-5 w-14 h-14 rounded-full flex items-center justify-center text-white shadow-xl transition-all duration-300 hover:scale-110">
+        <svg id="menuIcon" class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        <svg id="closeIcon" class="w-7 h-7 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+    </button>
+
+    <!-- Main Content Container -->
+    <div class="max-w-4xl mx-auto pb-16">
+
+        <!-- Header -->
+        <header class="text-center py-6 mb-8 border-b" style="border-bottom-color: var(--primary-color);">
+            <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight font-display header-title">
+                Module 1: Absolute Beginner Setup and Interface Mastery
+            </h1>
+            <p class="mt-2 text-xl italic font-medium" style="color: var(--secondary-color);">
+                (Beginner)
+            </p>
+        </header>
+
+        <!-- Progress Bar Container -->
+        <div class="mb-8 p-3 rounded-lg bg-card border border-border-color">
+            <div class="flex justify-between items-center mb-1 text-sm font-medium">
+                <span>Progress</span>
+                <span id="progressPercentage">0%</span>
+            </div>
+            <div id="progressBarContainer" class="w-full h-3 rounded-full overflow-hidden" style="background-color: var(--border-color);">
+                <div id="progressBar" class="h-full transition-all duration-500" style="background-color: var(--secondary-color); width: 0%;"></div>
+            </div>
+        </div>
+
+        <!-- Focus Text -->
+        <div class="mb-8 p-4 rounded-lg border border-border-color bg-card">
+            <p class="text-lg leading-relaxed">
+                <strong class="strong-accent">Focus:</strong> Essential foundations for total beginners—getting started and comfortable with the software. This module covers everything from initial installation to basic navigation and tool usage, assuming no prior experience. You'll learn how to set up the environment, understand the interface layout, create and manage documents, and use fundamental tools. Additional concepts like system compatibility, common pitfalls, and introductory preferences are included to build confidence. Practice exercises are expanded for hands-on reinforcement, helping you apply concepts step-by-step.
+            </p>
+        </div>
+
+
+        <!-- Syllabus Content -->
+        <div class="syllabus-list space-y-8">
+            
+            <!-- 1. Installation and System Integration -->
+            <section id="section-1">
+                <div class="section-header-flex flex justify-between items-center border-b-2 border-primary/40 pb-2">
+                    <h2 class="text-3xl font-bold">Installation and System Integration:</h2>
+                    <div class="flex items-center space-x-2">
+                        <label for="check-1" class="text-sm font-medium text-gray-400 hidden sm:inline cursor-pointer">Mark Read</label>
+                        <input type="checkbox" id="check-1" data-section-id="section-1" onchange="toggleSectionRead(this)" class="section-checkbox cursor-pointer">
+                    </div>
+                </div>
+                <ul class="list-disc ml-4 space-y-3 pt-4">
+                    <li>
+                        <strong class="strong-accent">Checking system requirements:</strong> Minimum hardware (e.g., OS versions: Windows 10+ or macOS 11+, RAM: 8GB recommended, GPU for smoother performance), internet connection for downloads.
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Downloading Adobe Creative Cloud:</strong> Visiting adobe.com, signing up for an account if none exists, downloading the Creative Cloud desktop app.
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Installing Animate:</strong> Searching for "Animate" in Creative Cloud app, installing the latest version, handling installation progress and potential errors (e.g., insufficient disk space, antivirus interference).
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Account setup and free trial activation:</strong> Creating/logging into Adobe ID, starting 7-day free trial (or subscribing), verifying email.
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Updating software:</strong> Enabling auto-updates in Creative Cloud preferences, manually checking for Animate updates to ensure latest features and bug fixes.
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Basic computer integration:</strong> Default file saving locations (e.g., Documents folder), keyboard/mouse basics (e.g., left-click select, right-click menus), undoing/redoing actions (<code class="keyboard-shortcut">Ctrl+Z</code>/<code class="keyboard-shortcut">Ctrl+Y</code>), integrating with other Adobe apps if installed (e.g., Photoshop for asset prep).
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Common troubleshooting:</strong> Resolving installation failures (e.g., restart computer, disable firewall temporarily), what to do if Creative Cloud won't launch.
+                    </li>
+                </ul>
+            </section>
+
+            <!-- 2. Interface Navigation -->
+            <section id="section-2">
+                <div class="section-header-flex flex justify-between items-center border-b-2 border-primary/40 pb-2 mt-8">
+                    <h2 class="text-3xl font-bold">Interface Navigation:</h2>
+                    <div class="flex items-center space-x-2">
+                        <label for="check-2" class="text-sm font-medium text-gray-400 hidden sm:inline cursor-pointer">Mark Read</label>
+                        <input type="checkbox" id="check-2" data-section-id="section-2" onchange="toggleSectionRead(this)" class="section-checkbox cursor-pointer">
+                    </div>
+                </div>
+                <ul class="list-disc ml-4 space-y-3 pt-4">
+                    <li>
+                        <strong class="strong-accent">Opening the program:</strong> Launching from Creative Cloud or desktop shortcut, understanding the Welcome screen (recent files, tutorials, new document options).
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Workspace basics:</strong> Default workspaces (e.g., Essentials for beginners, Animator for animation-focused), switching via Window > Workspaces, resetting to defaults if customized accidentally, saving custom workspaces.
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Key elements:</strong>
+                        <ul class="list-circle pl-4">
+                            <li><strong>Stage (canvas):</strong> Main work area for previewing animations, setting stage color, pasteboard area outside canvas.</li>
+                            <li><strong>Toolbar (tools overview):</strong> Customizing toolbar (add/remove tools), tool groups (e.g., shape tools nested under Rectangle).</li>
+                            <li><strong>Properties panel (settings):</strong> Context-sensitive changes (e.g., object position, size), inspector tabs.</li>
+                            <li><strong>Timeline (layers/frames intro):</strong> Basic overview of layers as "stacks" for organization, frames as time units.</li>
+                            <li><strong>Library (asset storage):</strong> Importing items, previewing symbols, basic search within library.</li>
+                            <li><strong>Additional panels:</strong> Color panel for swatches/mixing, Align panel for object positioning, Info panel for coordinates.</li>
+                            </ul>
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Zooming/panning:</strong> Hand tool (<code class="keyboard-shortcut">H</code>) for dragging canvas, Zoom tool (<code class="keyboard-shortcut">Z</code>) for magnifying, keyboard shortcuts (<code class="keyboard-shortcut">Ctrl++/-</code> for zoom in/out), using rulers (<code class="keyboard-shortcut">Ctrl+R</code>) and guides (drag from rulers) for alignment, grid snapping (View > Snapping options).
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Additional concepts:</strong> Panel management (docking, floating, closing/reopening via Window menu), full-screen mode (<code class="keyboard-shortcut">F11</code>), dark/light theme switching in preferences.
+                    </li>
+                </ul>
+            </section>
+
+            <!-- 3. Document Basics -->
+            <section id="section-3">
+                <div class="section-header-flex flex justify-between items-center border-b-2 border-primary/40 pb-2 mt-8">
+                    <h2 class="text-3xl font-bold">Document Basics:</h2>
+                    <div class="flex items-center space-x-2">
+                        <label for="check-3" class="text-sm font-medium text-gray-400 hidden sm:inline cursor-pointer">Mark Read</label>
+                        <input type="checkbox" id="check-3" data-section-id="section-3" onchange="toggleSectionRead(this)" class="section-checkbox cursor-pointer">
+                    </div>
+                </div>
+                <ul class="list-disc ml-4 space-y-3 pt-4">
+                    <li>
+                        <strong class="strong-accent">New document creation:</strong> Choosing presets (e.g., HD Video for cartoons/movies, Web for ads, ActionScript 3.0 vs. HTML5 Canvas types), setting custom dimensions (e.g., 1920x1080 for full HD), frame rates (explanation: 24 fps for film-like cartoons, 30 fps for smooth video ads, impact on animation timing), background color/transparency, ruler units (pixels vs. inches).
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Saving and opening files:</strong> <code class="keyboard-shortcut">.fla</code> format for native editable files, <code class="keyboard-shortcut">.xfl</code> for folder-based uncompressed projects (useful for version control), setting auto-save intervals in preferences (Edit > Preferences > General), publishing settings intro (basic export options).
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Basic troubleshooting:</strong> If file won't open (corrupted? Try recovery mode), version compatibility (opening older files in new versions), backing up files manually.
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Additional concepts:</strong> Document properties (Modify > Document) for global changes, understanding publish profiles for different outputs (e.g., video vs. web), introductory preferences setup (e.g., units, undo levels up to 200).
+                    </li>
+                </ul>
+            </section>
+
+            <!-- 4. Essential Tools Introduction -->
+            <section id="section-4">
+                <div class="section-header-flex flex justify-between items-center border-b-2 border-primary/40 pb-2 mt-8">
+                    <h2 class="text-3xl font-bold">Essential Tools Introduction:</h2>
+                    <div class="flex items-center space-x-2">
+                        <label for="check-4" class="text-sm font-medium text-gray-400 hidden sm:inline cursor-pointer">Mark Read</label>
+                        <input type="checkbox" id="check-4" data-section-id="section-4" onchange="toggleSectionRead(this)" class="section-checkbox cursor-pointer">
+                    </div>
+                </div>
+                <ul class="list-disc ml-4 space-y-3 pt-4">
+                    <li>
+                        <strong class="strong-accent">Selection tool (<code class="keyboard-shortcut">V</code>):</strong> Selecting single/multiple objects (Shift+click), moving (drag), resizing (drag handles), rotating (hover near corner).
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Subselection tool (<code class="keyboard-shortcut">A</code>):</strong> Editing paths/points within shapes for minor adjustments.
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Basic shapes:</strong> Rectangle (<code class="keyboard-shortcut">R</code>) and Oval (<code class="keyboard-shortcut">O</code>) tools for quick tests, PolyStar for stars/polygons, adjusting properties like rounded corners or inner radius.
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Line tool (<code class="keyboard-shortcut">N</code>):</strong > Drawing straight lines, adjusting stroke thickness/style.
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Color basics:</strong> Fill (solid/gradient) and stroke colors in Properties or Color panel, Eyedropper (<code class="keyboard-shortcut">I</code>) for sampling colors from stage, transparency (alpha) settings.
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Additional tools:</strong> Text tool (<code class="keyboard-shortcut">T</code>) for adding labels/titles (static text basics, font/size), Eraser (<code class="keyboard-shortcut">E</code>) for removing parts of shapes.
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Grouping and ungrouping:</strong> Combining objects (<code class="keyboard-shortcut">Ctrl+G</code>) for easier management, breaking apart (<code class="keyboard-shortcut">Ctrl+B</code>) for editing.
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Additional concepts:</strong> Object stacking order (bring to front/send to back via Modify > Arrange), snapping to objects/grid for precision.
+                    </li>
+                </ul>
+            </section>
+
+            <!-- 5. Efficiency Tips -->
+            <section id="section-5">
+                <div class="section-header-flex flex justify-between items-center border-b-2 border-primary/40 pb-2 mt-8">
+                    <h2 class="text-3xl font-bold">Efficiency Tips:</h2>
+                    <div class="flex items-center space-x-2">
+                        <label for="check-5" class="text-sm font-medium text-gray-400 hidden sm:inline cursor-pointer">Mark Read</label>
+                        <input type="checkbox" id="check-5" data-section-id="section-5" onchange="toggleSectionRead(this)" class="section-checkbox cursor-pointer">
+                    </div>
+                </div>
+                <ul class="list-disc ml-4 space-y-3 pt-4">
+                    <li>
+                        <strong class="strong-accent">Learn 5-10 key shortcuts early</strong> (e.g., <code class="keyboard-shortcut">Ctrl+Z</code> undo, <code class="keyboard-shortcut">Space</code> for temporary Hand tool, <code class="keyboard-shortcut">Ctrl+S</code> save, <code class="keyboard-shortcut">V</code> for Selection, <code class="keyboard-shortcut">Q</code> for Free Transform).
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Use the Help menu</strong> (<code class="keyboard-shortcut">F1</code>) for quick searches on features.
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Customize toolbar</strong> for frequently used tools to reduce clicks.
+                    </li>
+                    <li>
+                        <strong class="strong-accent">Enable tooltips</strong> in preferences for hover explanations.
+                    </li>
+                </ul>
+            </section>
+
+            <!-- 6. Hands-On Exercises -->
+            <section id="section-6" class="mt-12">
+                <div class="section-header-flex flex justify-between items-center border-b-2 pb-2 mb-6" style="border-bottom-color: var(--secondary-color);">
+                    <h2 class="text-3xl font-bold" style="color: var(--secondary-color);">Hands-On Exercises (Practice for Reinforcement):</h2>
+                    <div class="flex items-center space-x-2">
+                        <label for="check-6" class="text-sm font-medium text-gray-400 hidden sm:inline cursor-pointer">Mark Read</label>
+                        <input type="checkbox" id="check-6" data-section-id="section-6" onchange="toggleSectionRead(this)" class="section-checkbox cursor-pointer">
+                    </div>
+                </div>
+                <div class="space-y-6">
+                    <div class="hands-on-box p-6">
+                        <h3 class="text-xl font-semibold mb-2" style="color: var(--secondary-color);">Exercise 1: Installation and Setup Verification (Time: 20-30 minutes)</h3>
+                        <ul class="list-disc ml-4 text-gray-400 space-y-1">
+                            <li>Download and install Adobe Animate via Creative Cloud, activate the free trial, update to the latest version, and launch the app.</li>
+                            <li>Note any issues and troubleshoot using Adobe's help site.</li>
+                        </ul>
+                    </div>
+                    <div class="hands-on-box p-6">
+                        <h3 class="text-xl font-semibold mb-2" style="color: var(--secondary-color);">Exercise 2: Interface Exploration (Time: 15-20 minutes)</h3>
+                        <ul class="list-disc ml-4 text-gray-400 space-y-1">
+                            <li>Open Animate, switch between Essentials and Animator workspaces, dock/undock the Properties panel, zoom in/out on the stage using shortcuts, add a ruler guide, and reset the workspace.</li>
+                            <li>Take screenshots of key panels for reference.</li>
+                        </ul>
+                    </div>
+                    <div class="hands-on-box p-6">
+                        <h3 class="text-xl font-semibold mb-2" style="color: var(--secondary-color);">Exercise 3: Basic Document and Tool Practice (Time: 20-25 minutes)</h3>
+                        <ul class="list-disc ml-4 text-gray-400 space-y-1">
+                            <li>Create a new HD Video document (1920x1080, 24 fps), draw a rectangle and oval, change their fill colors using the Eyedropper (sample from each other), resize/rotate one shape, group them, save as "TestDocument.fla", close, and reopen to edit further.</li>
+                            <li>Add a text label saying "My First Shape" and align it to the center.</li>
+                        </ul>
+                    </div>
+                    <div class="hands-on-box p-6">
+                        <h3 class="text-xl font-semibold mb-2" style="color: var(--secondary-color);">Exercise 4: Troubleshooting Drill (Time: 10-15 minutes)</h3>
+                        <ul class="list-disc ml-4 text-gray-400 space-y-1">
+                            <li>Intentionally create a "problem" (e.g., hide a panel, change frame rate), then fix it using menus or preferences.</li>
+                            <li>Practice undoing multiple steps.</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 7. Self-Assessment Quiz -->
+            <section id="section-7" class="mt-12 p-6 rounded-xl bg-card border border-border-color">
+                <div class="section-header-flex flex justify-between items-center pb-2 mb-4" style="border-bottom: 1px solid var(--border-color);">
+                    <h2 class="text-3xl font-bold" style="color: var(--secondary-color);">Self-Assessment Quiz:</h2>
+                    <div class="flex items-center space-x-2">
+                        <label for="check-7" class="text-sm font-medium text-gray-400 hidden sm:inline cursor-pointer">Mark Read</label>
+                        <input type="checkbox" id="check-7" data-section-id="section-7" onchange="toggleSectionRead(this)" class="section-checkbox cursor-pointer">
+                    </div>
+                </div>
+                <ul class="list-disc ml-4 space-y-3 text-gray-300 pt-4">
+                    <li>What shortcut zooms in? (Answer: <code class="keyboard-shortcut">Ctrl++</code>)</li>
+                    <li>How do you create a new document? (Answer: File > New or Welcome screen)</li>
+                    <li>Name three key panels and their purposes.</li>
+                    <li>Explain why you'd use symbols (intro hint for future modules).</li>
+                </ul>
+            </section>
+        </div>
+
+        <!-- Notes Section -->
+        <section class="mt-16">
+            <h2 class="text-3xl font-bold border-b-2 pb-2 mb-4" style="color: var(--primary-color); border-bottom-color: var(--border-color);">My Personal Notes</h2>
+            <p class="text-sm text-gray-400 mb-3">These notes are saved automatically in your browser.</p>
+            <textarea id="notesBox" rows="10" placeholder="Type your notes, reminders, or specific difficulties here..." class="w-full p-4 rounded-lg focus:outline-none focus:ring-2" style="focus-ring-color: var(--primary-color);"></textarea>
+        </section>
+
+        <!-- Final Instruction -->
+        <p class="mt-12 text-center text-lg italic text-gray-400">
+            Proceed to the next module once comfortable with these basics.
+        </p>
+
+    </div>
+
+    <!-- JavaScript for Theme, Color, Font, and Progress Control -->
+    <script>
+        const PANEL_ID = 'customizationPanel';
+        const BODY = document.body;
+        const PANEL = document.getElementById(PANEL_ID);
+        const MENU_TOGGLE_BTN = document.getElementById('menuToggleBtn');
+        const PRIMARY_COLOR_INPUT = document.getElementById('primaryColor');
+        const SECONDARY_COLOR_INPUT = document.getElementById('secondaryColor');
+        const TERTIARY_COLOR_INPUT = document.getElementById('tertiaryColor');
+        const FONT_SIZE_SLIDER = document.getElementById('fontSizeSlider');
+        const THEME_TOGGLE = document.getElementById('themeToggle');
+        const NOTES_BOX = document.getElementById('notesBox');
+        const MENU_ICON = document.getElementById('menuIcon');
+        const CLOSE_ICON = document.getElementById('closeIcon');
+
+        // Progress elements
+        const PROGRESS_BAR = document.getElementById('progressBar');
+        const PROGRESS_PERCENTAGE_SPAN = document.getElementById('progressPercentage');
+        
+        // Storage keys
+        const PROGRESS_STORAGE_KEY = 'module1Progress';
+        const NOTES_STORAGE_KEY = 'module1Notes';
+        
+        const SECTION_IDS = [
+            'section-1', 'section-2', 'section-3', 'section-4',
+            'section-5', 'section-6', 'section-7'
+        ];
+        
+        let sectionStatus = {}; 
+
+        const DEFAULT_SETTINGS = {
+            isDark: true,
+            primary: '#6366F1',
+            secondary: '#34D399',
+            tertiary: '#A5B4FC',
+            fontSize: 16, // Default base size in pixels
+        };
+
+        // --- Core Functions: Settings ---
+
+        /** Loads settings from localStorage and applies them. */
+        function loadSettings() {
+            const savedSettings = JSON.parse(localStorage.getItem('themeSettings'));
+            let currentSettings;
+
+            if (savedSettings) {
+                currentSettings = { ...DEFAULT_SETTINGS, ...savedSettings };
+            } else {
+                currentSettings = DEFAULT_SETTINGS;
+            }
+            
+            // Set input values to current state
+            THEME_TOGGLE.checked = !currentSettings.isDark;
+            PRIMARY_COLOR_INPUT.value = currentSettings.primary;
+            SECONDARY_COLOR_INPUT.value = currentSettings.secondary;
+            TERTIARY_COLOR_INPUT.value = currentSettings.tertiary;
+            FONT_SIZE_SLIDER.value = currentSettings.fontSize;
+
+            applySettings(currentSettings);
+        }
+
+        /** Saves current settings to localStorage. */
+        function saveSettings(settings) {
+            localStorage.setItem('themeSettings', JSON.stringify(settings));
+        }
+
+        /** Applies the theme, colors, and font size to the document. */
+        function applySettings(settings) {
+            const root = document.documentElement;
+
+            // Apply Theme Mode
+            if (settings.isDark) {
+                BODY.classList.remove('light-mode');
+                root.style.setProperty('--bg-color', '#0A0A1F');
+                root.style.setProperty('--text-color', '#E5E7EB');
+                root.style.setProperty('--card-bg', '#111827');
+                root.style.setProperty('--border-color', '#374151');
+                root.style.setProperty('--highlight-color', '#FBBF24');
+            } else {
+                BODY.classList.add('light-mode');
+                root.style.setProperty('--bg-color', '#FFFFFF');
+                root.style.setProperty('--text-color', '#1F2937');
+                root.style.setProperty('--card-bg', '#F9FAFB');
+                root.style.setProperty('--border-color', '#E5E7EB');
+                root.style.setProperty('--highlight-color', '#94A3B8');
+            }
+
+            // Apply custom colors
+            root.style.setProperty('--primary-color', settings.primary);
+            root.style.setProperty('--secondary-color', settings.secondary);
+            root.style.setProperty('--tertiary-color', settings.tertiary);
+
+            // Applying font size to the HTML root element (document.documentElement)
+            root.style.fontSize = `${settings.fontSize}px`;
+
+            // Update floating button background
+            MENU_TOGGLE_BTN.style.backgroundColor = settings.primary;
+        }
+
+        /** Updates and saves settings based on current input values. */
+        function updateSettingsFromInputs() {
+            const settings = {
+                isDark: !THEME_TOGGLE.checked,
+                primary: PRIMARY_COLOR_INPUT.value,
+                secondary: SECONDARY_COLOR_INPUT.value,
+                tertiary: TERTIARY_COLOR_INPUT.value,
+                fontSize: parseInt(FONT_SIZE_SLIDER.value),
+            };
+            applySettings(settings);
+            saveSettings(settings);
+        }
+
+        /** Resets all settings to the original default and applies them. */
+        function setDefaultSettings() {
+            // Set input values back to defaults
+            THEME_TOGGLE.checked = !DEFAULT_SETTINGS.isDark;
+            PRIMARY_COLOR_INPUT.value = DEFAULT_SETTINGS.primary;
+            SECONDARY_COLOR_INPUT.value = DEFAULT_SETTINGS.secondary;
+            TERTIARY_COLOR_INPUT.value = DEFAULT_SETTINGS.tertiary;
+            FONT_SIZE_SLIDER.value = DEFAULT_SETTINGS.fontSize; // Reset font size to 16
+
+            // Apply and save the default settings
+            applySettings(DEFAULT_SETTINGS);
+            saveSettings(DEFAULT_SETTINGS);
+            
+            showTemporaryMessage('Theme settings reset to default dark mode and font size!');
+            togglePanel(); // Close panel after reset
+        }
+        
+        // --- Core Functions: Notes ---
+        
+        /** Loads notes from localStorage and applies them. */
+        function loadNotes() {
+            const notes = localStorage.getItem(NOTES_STORAGE_KEY);
+            if (NOTES_BOX && notes) {
+                NOTES_BOX.value = notes;
+            }
+        }
+
+        /** Saves current notes to localStorage. */
+        function saveNotes() {
+            if (NOTES_BOX) {
+                localStorage.setItem(NOTES_STORAGE_KEY, NOTES_BOX.value);
+            }
+        }
+
+        // --- Core Functions: Progress ---
+
+        /** Loads progress state from localStorage and updates UI. */
+        function loadProgress() {
+            const savedProgress = localStorage.getItem(PROGRESS_STORAGE_KEY);
+            if (savedProgress) {
+                sectionStatus = JSON.parse(savedProgress);
+            } else {
+                // Initialize all to false if nothing is saved
+                SECTION_IDS.forEach(id => sectionStatus[id] = false);
+            }
+            
+            // Update checkboxes on screen
+            SECTION_IDS.forEach(id => {
+                // Checkbox ID format is 'check-1', 'check-2', etc.
+                const checkId = `check-${id.split('-')[1]}`;
+                const checkbox = document.getElementById(checkId);
+                if (checkbox) {
+                    // Use boolean coercion (!!sectionStatus[id]) to set checked state
+                    checkbox.checked = !!sectionStatus[id];
+                }
+            });
+        }
+        
+        /** Updates the progress bar percentage display. */
+        function updateProgressBar() {
+            const totalSections = SECTION_IDS.length;
+            const completedSections = SECTION_IDS.filter(id => sectionStatus[id]).length;
+            const progressPercentage = (completedSections / totalSections) * 100;
+            const fixedPercentage = progressPercentage.toFixed(0);
+            
+            if (PROGRESS_BAR && PROGRESS_PERCENTAGE_SPAN) {
+                PROGRESS_BAR.style.width = `${fixedPercentage}%`;
+                PROGRESS_PERCENTAGE_SPAN.textContent = `${fixedPercentage}%`;
+            }
+        }
+
+        /** Handles the toggle change event for a section. */
+        function toggleSectionRead(checkbox) {
+            const sectionId = checkbox.getAttribute('data-section-id');
+            const isChecked = checkbox.checked;
+            
+            sectionStatus[sectionId] = isChecked;
+            localStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify(sectionStatus));
+            updateProgressBar();
+            
+            const message = isChecked ? `Section marked as complete! (${sectionId})` : `Section marked as incomplete. (${sectionId})`;
+            showTemporaryMessage(message);
+        }
+        
+        // Expose to global scope for HTML inline calls (onclick/onchange)
+        window.setDefaultSettings = setDefaultSettings;
+        window.togglePanel = togglePanel;
+        window.toggleSectionRead = toggleSectionRead;
+
+
+        // --- Utility Functions ---
+
+        /** Toggles the customization panel visibility. */
+        function togglePanel() {
+            const isOpen = PANEL.classList.toggle('open');
+            MENU_ICON.classList.toggle('hidden', isOpen);
+            CLOSE_ICON.classList.toggle('hidden', !isOpen);
+        }
+        
+        // Custom Message Box function (replaces alert())
+        function showTemporaryMessage(message) {
+            let msgBox = document.getElementById('tempMessageBox');
+            if (!msgBox) {
+                msgBox = document.createElement('div');
+                msgBox.id = 'tempMessageBox';
+                msgBox.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white p-3 rounded-lg shadow-xl z-[2000] opacity-0 transition-opacity duration-300 pointer-events-none';
+                document.body.appendChild(msgBox);
+            }
+            msgBox.textContent = message;
+            msgBox.style.opacity = '1';
+
+            setTimeout(() => {
+                msgBox.style.opacity = '0';
+            }, 3000);
+        }
+
+        // --- Initialization ---
+
+        window.onload = () => {
+            loadSettings();
+            loadNotes(); // Load saved notes
+            loadProgress(); // Load saved progress
+            updateProgressBar(); // Update bar based on loaded progress
+
+            // Attach listeners to input fields
+            PRIMARY_COLOR_INPUT.addEventListener('input', updateSettingsFromInputs);
+            SECONDARY_COLOR_INPUT.addEventListener('input', updateSettingsFromInputs);
+            TERTIARY_COLOR_INPUT.addEventListener('input', updateSettingsFromInputs);
+            FONT_SIZE_SLIDER.addEventListener('input', updateSettingsFromInputs); 
+            THEME_TOGGLE.addEventListener('change', updateSettingsFromInputs);
+            
+            // Listener for notes box saving
+            if (NOTES_BOX) {
+                NOTES_BOX.addEventListener('input', saveNotes);
+            }
+        };
+    </script>
+</body>
+</html>
+
