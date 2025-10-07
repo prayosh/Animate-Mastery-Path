@@ -292,13 +292,36 @@
             color: #F3F4F6 !important; 
         }
 
-        /* Keep the checkmark visible over the dark background */
+        /* * FIX: Custom dark style for the checkbox box 
+         * We use appearance: none to override the native white box style.
+         */
         .module-checkbox {
-            accent-color: #34D399; /* Green checkmark color */
+            /* 1. Reset native browser appearance */
+            appearance: none;
+            -webkit-appearance: none; 
+            
             width: 1.5rem;
             height: 1.5rem;
             cursor: pointer;
+            
+            /* 2. The desired dark color for the unchecked box */
+            background-color: #1F2937; /* Dark Gray background (gray-800 equivalent) */
+            border: 2px solid #4B5563; /* Subtle border (gray-600 equivalent) */
+            border-radius: 0.25rem;
+            transition: background-color 0.2s, border-color 0.2s;
         }
+
+        /* 3. Style for the CHECKED state: changes background to green and adds a white SVG checkmark */
+        .module-checkbox:checked {
+            background-color: #34D399; /* Green background when checked */
+            border-color: #34D399;
+            /* White checkmark using a high-contrast SVG data URI */
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23FFFFFF' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10l3 3l6-6'/%3e%3c/svg%3e");
+            background-size: 100% 100%;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
 
         .difficulty-tag {
             font-size: 0.75rem;
